@@ -1,7 +1,8 @@
 module Main exposing (..)
 
 import Browser
-import Card exposing (Card, exampleCards)
+import Card exposing (Card)
+import CardList exposing (exampleCards)
 import Cards exposing (Model, handCards)
 import Element exposing (centerY, fill, padding, rgb, width)
 import Element.Background exposing (color)

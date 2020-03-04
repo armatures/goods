@@ -1,6 +1,6 @@
 module Cards exposing (..)
 
-import Card exposing (Card, Index, exampleCards)
+import Card exposing (Card, Index)
 import Random exposing (Generator)
 import Random.List exposing (shuffle)
 
