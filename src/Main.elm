@@ -1,10 +1,10 @@
 module Main exposing (..)
 
 import Browser
-import Card exposing (Card)
+import Card exposing (Card, Resource(..), showCoins, showVictoryPoints)
 import CardList exposing (exampleCards)
 import Cards exposing (Model, handCards)
-import Element exposing (centerY, fill, padding, rgb, width)
+import Element exposing (alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, spacing, width)
 import Element.Background exposing (color)
 import Element.Input as Input
 import Html exposing (Html)
@@ -85,19 +85,44 @@ setDeck deck cards =
 view : Model -> Html Msg
 view model =
     let
-        hand =
-            handCards model
-                |> List.map showCard
+        colorForCard card =
+            case card.resource of
+                Red ->
+                    Element.Background.color (rgb 0.8 0.5 0.5)
 
-        showCard =
-            .name >> Element.text
+                Yellow ->
+                    Element.Background.color (rgb 0.8 0.8 0.5)
+
+                Green ->
+                    Element.Background.color (rgb 0.5 0.8 0.5)
+
+                White ->
+                    Element.Background.color (rgb 0.8 0.8 0.8)
+
+                Black ->
+                    Element.Background.color (rgb 0.2 0.2 0.2)
+
+        hand =
+            Element.row [ padding 20, spacing 10 ]
+                (handCards model
+                    |> List.map showCard
+                )
+
+        showCard card =
+            Element.column [ colorForCard card, height (px 200), width (px 200) ]
+                [ Element.row [ padding 5, width fill ]
+                    [ Element.el [ alignLeft ] <| Element.text <| showCoins card.cost
+                    , Element.el [ alignRight ] <| Element.text <| showVictoryPoints card.victoryPoints
+                    ]
+                , Element.el [ centerX ] (Element.text card.name)
+                ]
     in
     Element.layout [] <|
         Element.column
             [ width fill, centerY, color (rgb 0.8 0.4 0.4), padding 30 ]
         <|
             List.append
-                hand
+                [ hand ]
                 [ Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
                     { onPress = Just RedrawHand
                     , label = Element.text "redraw hand"

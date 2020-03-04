@@ -1,5 +1,7 @@
 module Card exposing (..)
 
+import String exposing (fromInt)
+
 
 type alias Card =
     -- cannot yet handle Charburner or Market Office
@@ -32,6 +34,16 @@ type Good
 
 type Coins
     = Coins Int
+
+
+showCoins : Coins -> String
+showCoins (Coins coins) =
+    fromInt coins ++ "💰"
+
+
+showVictoryPoints : VPs -> String
+showVictoryPoints (VPs vps) =
+    fromInt vps ++ " ⭐️"
 
 
 type Resource
