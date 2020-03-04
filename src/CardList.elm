@@ -7,7 +7,7 @@ module CardList exposing (..)
 
 -}
 
-import Card exposing (Card, CardType(..), Coins(..), Good(..), Id(..), ProductionChain(..), ProductionGood(..), RequiredResources(..), Resource(..), VPs(..))
+import Card exposing (Card, CardType(..), Coins(..), Good(..), Id(..), MarketOfficeType(..), ProductionChain(..), ProductionGood(..), RequiredResources(..), Resource(..), VPs(..))
 
 
 exampleCards : List Card
@@ -55,7 +55,24 @@ greens =
 
 blacks : List Card
 blacks =
-    []
+    [ marketOffice (Coins 8) (VPs 3) False (Discount Green)
+    , marketOffice (Coins 8) (VPs 3) False (Discount Green)
+    , marketOffice (Coins 8) (VPs 3) True (Discount White)
+    , marketOffice (Coins 8) (VPs 3) True (Discount White)
+    , marketOffice (Coins 8) (VPs 3) True (Discount White)
+    , marketOffice (Coins 8) (VPs 3) True (Discount Black)
+    , marketOffice (Coins 8) (VPs 3) True (Discount Black)
+    , marketOffice (Coins 8) (VPs 3) True (Discount Black)
+    , marketOffice (Coins 8) (VPs 3) False (Discount Red)
+    , marketOffice (Coins 8) (VPs 3) False (Discount Red)
+    , marketOffice (Coins 8) (VPs 3) False (Discount Red)
+    , marketOffice (Coins 8) (VPs 3) False (Discount Yellow)
+    , marketOffice (Coins 8) (VPs 3) False (Discount Yellow)
+    , marketOffice (Coins 8) (VPs 3) False (Discount Yellow)
+    , marketOffice (Coins 6) (VPs 2) False BonusDraw
+    , marketOffice (Coins 6) (VPs 2) False BonusDraw
+    , marketOffice (Coins 6) (VPs 2) True BonusDraw
+    ]
 
 
 yellows : List Card
@@ -144,3 +161,8 @@ pCard name cost victoryPoints resource sun requiredResources productionChain pro
     , cardType = cardType
     , id = id
     }
+
+
+marketOffice : Coins -> VPs -> Bool -> MarketOfficeType -> Card
+marketOffice coins vps sun marketOfficeType =
+    Card "Market Office" coins vps Black sun (MarketOffice marketOfficeType) (Id 0)

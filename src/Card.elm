@@ -21,7 +21,12 @@ type CardType
         , productionChain : ProductionChain
         , productionGood : ProductionGood
         }
-    | MarketOffice
+    | MarketOffice MarketOfficeType
+
+
+type MarketOfficeType
+    = Discount Resource
+    | BonusDraw
 
 
 type RequiredResources
