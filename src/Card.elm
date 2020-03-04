@@ -166,7 +166,7 @@ exampleCards =
             , requiredResources = Required ( Black, 3 ) ( Red, 1 )
             , productionChain = ProductionChain2 (Resource Red) (ProductionGood Coal)
             , productionGood = Brick
-            , location = Deck
+            , location = Deck 0
 
             -- needs a dummy Id set before mapping them all :(
             , id = Id 0
@@ -182,6 +182,7 @@ exampleCards =
                 (ProductionChain1 (Resource Green))
                 Lumber
                 Deck
+                0
                 (Id 0)
 
         mill =
@@ -194,6 +195,7 @@ exampleCards =
                 (ProductionChain1 (Resource Yellow))
                 Flour
                 Deck
+                0
                 (Id 0)
     in
     [ brickMan

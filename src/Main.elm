@@ -1,11 +1,13 @@
 module Main exposing (..)
 
 import Browser
-import Cards exposing (Cards, handCards, startingCards)
+import Card exposing (Card)
+import Cards exposing (Cards, handCards, initCards, setDeck, shuffleDeck)
 import Element exposing (centerY, fill, padding, rgb, width)
 import Element.Background exposing (color)
 import Element.Input as Input
 import Html exposing (Html)
+import Random
 
 
 
@@ -19,7 +21,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { cards = startingCards }, Cmd.none )
+    ( { cards = initCards }, Random.generate ShuffleDeck (shuffleDeck initCards) )
 
 
 
@@ -28,6 +30,7 @@ init =
 
 type Msg
     = RedrawHand
+    | ShuffleDeck (List Card)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -35,6 +38,11 @@ update msg model =
     case msg of
         RedrawHand ->
             ( model
+            , Cmd.none
+            )
+
+        ShuffleDeck newDeck ->
+            ( { model | cards = setDeck newDeck model.cards }
             , Cmd.none
             )
 
