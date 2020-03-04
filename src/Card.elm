@@ -11,7 +11,6 @@ type alias Card =
     , requiredResources : RequiredResources
     , productionChain : ProductionChain
     , productionGood : ProductionGood
-    , location : Location -- in the spirit of avoiding lenses and making things flat, this is going here
     , id : Id
     }
 
@@ -119,22 +118,6 @@ type ProductionGood
     | Food
 
 
-{-| where can a production card be in this game?
-Assistants & workers will be managed independently.
-
-A card in the physical version of this game may be sitting on top of another card in a tableau.
-To reference that card, we would want its Id, but we also want to make sure it's in a tableau 🤔...
-I don't think it should much matter if we just treat cards as having goods on them.
-It doesn't matter for gameplay, just it's nice to have such simple components in the physical version of the game.
-
--}
-type Location
-    = Hand Index
-    | Tableau Index
-    | Deck
-    | Discard
-
-
 type alias Index =
     Int
 
@@ -166,7 +149,6 @@ exampleCards =
             , requiredResources = Required ( Black, 3 ) ( Red, 1 )
             , productionChain = ProductionChain2 (Resource Red) (ProductionGood Coal)
             , productionGood = Brick
-            , location = Deck 0
 
             -- needs a dummy Id set before mapping them all :(
             , id = Id 0
@@ -181,8 +163,6 @@ exampleCards =
                 (Required ( Black, 1 ) ( Red, 2 ))
                 (ProductionChain1 (Resource Green))
                 Lumber
-                Deck
-                0
                 (Id 0)
 
         mill =
@@ -194,8 +174,6 @@ exampleCards =
                 (Required ( Black, 2 ) ( Green, 2 ))
                 (ProductionChain1 (Resource Yellow))
                 Flour
-                Deck
-                0
                 (Id 0)
     in
     [ brickMan

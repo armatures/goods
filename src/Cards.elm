@@ -1,6 +1,6 @@
 module Cards exposing (..)
 
-import Card exposing (Card, Index, Location(..), exampleCards)
+import Card exposing (Card, Index, exampleCards)
 import Random exposing (Generator)
 import Random.List exposing (shuffle)
 
@@ -13,6 +13,7 @@ type Cards
     = Cards
         { allCards : List Card
         , deck : List Card
+        , hand : List Card
         }
 
 
@@ -21,50 +22,17 @@ returns the hand cards sorted by index in the hand.
 -}
 handCards : Cards -> List Card
 handCards (Cards cards) =
-    List.filterMap isInHand (.allCards cards)
-        |> List.sortBy Tuple.first
-        |> List.map Tuple.second
+    cards.hand
 
 
-isInHand : Card -> Maybe ( Index, Card )
-isInHand card =
-    case card.location of
-        Hand i ->
-            Just ( i, card )
-
-        _ ->
-            Nothing
+isInHand : Card -> Cards -> Bool
+isInHand card (Cards cards) =
+    List.member card <| .hand cards
 
 
 isInDeck : Card -> Cards -> Bool
 isInDeck card (Cards cards) =
     List.member card <| .deck cards
-
-
-
---setCard : Card -> Cards -> Cards
---setCard card (Cards cards) =
---    List.map
---        (\c ->
---            if c.id == card.id then
---                card
---
---            else
---                c
---        )
---        (.allCards cards)
---        |> Cards
---setHandCards : List Card -> Cards -> Cards
---setHandCards hand (Cards cards) =
---    let
---        discardCurrentHand =
---            List.map (\c -> if isJust (isInHand c) then {c|location = Discard} else c) cards
---    in
---    discardCurrentHand
---    |> List.map (\c -> if List.member c hand then {c|location = Hand (}) cards
---shuffleDeck : List Int -> Cards -> Cards
---shuffleDeck order (cards) =
---    (\c-> isInDeck c cards) cards
 
 
 shuffleDeck : Cards -> Generator (List Card)
@@ -79,4 +47,4 @@ setDeck deck (Cards cards) =
 
 initCards : Cards
 initCards =
-    Cards { allCards = exampleCards, deck = exampleCards }
+    Cards { allCards = exampleCards, deck = exampleCards, hand = [] }
