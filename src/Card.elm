@@ -11,6 +11,8 @@ type alias Card =
     , requiredResources : RequiredResources
     , productionChain : ProductionChain
     , productionGood : ProductionGood
+    , location : Location -- in the spirit of avoiding lenses and making things flat, this is going here
+    , id : Id
     }
 
 
@@ -25,8 +27,8 @@ type ProductionChain
 
 
 type Good
-    = Good_ProductionGood ProductionGood
-    | Good_Resource Resource
+    = ProductionGood ProductionGood
+    | Resource Resource
 
 
 type Coins
@@ -117,6 +119,30 @@ type ProductionGood
     | Food
 
 
+{-| where can a production card be in this game?
+Assistants & workers will be managed independently.
+
+A card in the physical version of this game may be sitting on top of another card in a tableau.
+To reference that card, we would want its Id, but we also want to make sure it's in a tableau 🤔...
+I don't think it should much matter if we just treat cards as having goods on them.
+It doesn't matter for gameplay, just it's nice to have such simple components in the physical version of the game.
+
+-}
+type Location
+    = Hand Index
+    | Tableau Index
+    | Deck
+    | Discard
+
+
+type alias Index =
+    Int
+
+
+type Id
+    = Id Int
+
+
 type VPs
     = VPs Int
 
@@ -126,18 +152,52 @@ type VPs
     Is this API usable? Aside from Black and Blue cards, which it can't handle, awkward bits are:
     ProductionChain1 and ProductionChain2, to express having 1 or 2 inputs
 
-Good\_Resource and Good\_ProductionGood to avoid conflicts with constructors of their two inhabitant types
-
 -}
 exampleCards : List Card
 exampleCards =
-    [ { name = "Brick Manufacture"
-      , cost = Coins 2
-      , victoryPoints = VPs 2
-      , resource = Red
-      , sun = False
-      , requiredResources = Required ( Black, 3 ) ( Red, 1 )
-      , productionChain = ProductionChain2 (Good_Resource Red) (Good_ProductionGood Coal)
-      , productionGood = Brick
-      }
+    let
+        brickMan : Card
+        brickMan =
+            { name = "Brick Manufacture"
+            , cost = Coins 2
+            , victoryPoints = VPs 2
+            , resource = Red
+            , sun = False
+            , requiredResources = Required ( Black, 3 ) ( Red, 1 )
+            , productionChain = ProductionChain2 (Resource Red) (ProductionGood Coal)
+            , productionGood = Brick
+            , location = Deck
+
+            -- needs a dummy Id set before mapping them all :(
+            , id = Id 0
+            }
+
+        sawmill =
+            Card "Sawmill"
+                (Coins 2)
+                (VPs 2)
+                Green
+                True
+                (Required ( Black, 1 ) ( Red, 2 ))
+                (ProductionChain1 (Resource Green))
+                Lumber
+                Deck
+                (Id 0)
+
+        mill =
+            Card "Mill"
+                (Coins 4)
+                (VPs 2)
+                Yellow
+                True
+                (Required ( Black, 2 ) ( Green, 2 ))
+                (ProductionChain1 (Resource Yellow))
+                Flour
+                Deck
+                (Id 0)
+    in
+    [ brickMan
+    , sawmill
+    , mill
     ]
+        |> List.indexedMap (\i c -> { c | id = Id i })

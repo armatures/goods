@@ -1,11 +1,11 @@
 module Main exposing (..)
 
 import Browser
+import Cards exposing (Cards, handCards, startingCards)
 import Element exposing (centerY, fill, padding, rgb, width)
 import Element.Background exposing (color)
 import Element.Input as Input
 import Html exposing (Html)
-import Http exposing (expectString)
 
 
 
@@ -13,12 +13,13 @@ import Http exposing (expectString)
 
 
 type alias Model =
-    { response : Maybe String }
+    { cards : Cards
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { response = Nothing }, Cmd.none )
+    ( { cards = startingCards }, Cmd.none )
 
 
 
@@ -26,23 +27,17 @@ init =
 
 
 type Msg
-    = BasicRequest
-    | GotText (Result Http.Error String)
+    = RedrawHand
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        BasicRequest ->
+        RedrawHand ->
             ( model
-            , Http.get
-                { url = "https://www.jsonstore.io/e1670eef563482c20aa951a1f9a31eb3af3ea6d31e4dcc94b49ad001ae0dc805"
-                , expect = expectString GotText
-                }
+            , Cmd.none
             )
 
-        GotText getText ->
-            ( { model | response = Result.toMaybe getText }, Cmd.none )
 
 
 ---- VIEW ----
@@ -51,23 +46,24 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        t =
-            case model.response of
-                Nothing ->
-                    "hello from elm-ui"
+        hand =
+            handCards model.cards
+                |> List.map showCard
 
-                Just a ->
-                    a
+        showCard =
+            .name >> Element.text
     in
     Element.layout [] <|
         Element.column
             [ width fill, centerY, color (rgb 0.8 0.4 0.4), padding 30 ]
-            [ Element.text t
-            , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                { onPress = Just BasicRequest
-                , label = Element.text "make a request"
-                }
-            ]
+        <|
+            List.append
+                hand
+                [ Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                    { onPress = Just RedrawHand
+                    , label = Element.text "redraw hand"
+                    }
+                ]
 
 
 
