@@ -1,27 +1,32 @@
 module Main exposing (..)
 
 import Browser
-import Card exposing (Card)
-import Cards exposing (Cards, handCards, initCards, setDeck, shuffleDeck)
+import Card exposing (Card, exampleCards)
+import Cards exposing (Model, handCards)
 import Element exposing (centerY, fill, padding, rgb, width)
 import Element.Background exposing (color)
 import Element.Input as Input
 import Html exposing (Html)
 import Random
+import Random.List exposing (shuffle)
 
 
 
 ---- MODEL ----
 
 
-type alias Model =
-    { cards : Cards
-    }
-
-
 init : ( Model, Cmd Msg )
 init =
-    ( { cards = initCards }, Random.generate ShuffleDeck (shuffleDeck initCards) )
+    let
+        model =
+            { deck = [], hand = [], discard = [], pendingDraws = 1 }
+    in
+    ( model, shuffleDeck exampleCards )
+
+
+shuffleDeck : List Card -> Cmd Msg
+shuffleDeck deck =
+    Random.generate ShuffleDeck (shuffle deck)
 
 
 
@@ -31,6 +36,7 @@ init =
 type Msg
     = RedrawHand
     | ShuffleDeck (List Card)
+    | DrawCard
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -42,9 +48,33 @@ update msg model =
             )
 
         ShuffleDeck newDeck ->
-            ( { model | cards = setDeck newDeck model.cards }
-            , Cmd.none
-            )
+            let
+                newModel =
+                    setDeck newDeck model
+            in
+            if newModel.pendingDraws > 0 then
+                drawCard { newModel | pendingDraws = newModel.pendingDraws - 1 }
+
+            else
+                ( newModel, Cmd.none )
+
+        DrawCard ->
+            drawCard model
+
+
+drawCard : Model -> ( Model, Cmd Msg )
+drawCard model =
+    case model.deck of
+        c :: deck ->
+            ( { model | deck = deck, hand = c :: model.hand }, Cmd.none )
+
+        [] ->
+            ( { model | pendingDraws = model.pendingDraws + 1 }, shuffleDeck model.discard )
+
+
+setDeck : List Card -> Model -> Model
+setDeck deck cards =
+    { cards | deck = deck }
 
 
 
@@ -55,7 +85,7 @@ view : Model -> Html Msg
 view model =
     let
         hand =
-            handCards model.cards
+            handCards model
                 |> List.map showCard
 
         showCard =
