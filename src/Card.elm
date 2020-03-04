@@ -10,11 +10,18 @@ type alias Card =
     , victoryPoints : VPs
     , resource : Resource
     , sun : Bool
-    , requiredResources : RequiredResources
-    , productionChain : ProductionChain
-    , productionGood : ProductionGood
+    , cardType : CardType
     , id : Id
     }
+
+
+type CardType
+    = ProductionCard
+        { requiredResources : RequiredResources
+        , productionChain : ProductionChain
+        , productionGood : ProductionGood
+        }
+    | MarketOffice
 
 
 type RequiredResources
