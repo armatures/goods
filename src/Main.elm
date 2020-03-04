@@ -22,7 +22,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         model =
-            { deck = [], hand = [], discard = [], pendingDraws = 1 }
+            { deck = [], hand = [], discard = [], pendingDraws = 5 }
     in
     ( model, shuffleDeck exampleCards )
 
@@ -46,33 +46,78 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         RedrawHand ->
-            ( model
-            , Cmd.none
-            )
+            drawCardIfNeeded
+                { model
+                    | discard = model.discard ++ model.hand
+                    , pendingDraws = List.length model.hand
+                    , hand = []
+                }
 
         ShuffleDeck newDeck ->
             let
                 newModel =
                     setDeck newDeck model
+
+                handSize =
+                    List.length model.hand
+
+                firstHalfOfHand =
+                    List.take (handSize // 2) newModel.hand
+
+                secondHalfOfHand =
+                    List.drop (handSize // 2) newModel.hand
             in
             if newModel.pendingDraws > 0 then
-                drawCard { newModel | pendingDraws = newModel.pendingDraws - 1 }
+                case drawCard newModel of
+                    Err EmptyDeck ->
+                        -- if the discard is out, instead of letting them choose, they lose the second half of their hand
+                        ( { newModel | discard = [], hand = firstHalfOfHand }
+                        , shuffleDeck <| List.concat [ newModel.discard, newModel.deck, secondHalfOfHand ]
+                        )
+
+                    Ok m ->
+                        drawCardIfNeeded m
 
             else
                 ( newModel, Cmd.none )
 
         DrawCard ->
-            drawCard model
+            drawCardIfNeeded { model | pendingDraws = model.pendingDraws + 1 }
 
 
-drawCard : Model -> ( Model, Cmd Msg )
+{-| draw cards until you have no more pending draws, or the deck runs out
+-}
+drawCardIfNeeded : Model -> ( Model, Cmd Msg )
+drawCardIfNeeded model =
+    if model.pendingDraws > 0 then
+        case drawCard model of
+            Ok m ->
+                drawCardIfNeeded m
+
+            Err EmptyDeck ->
+                ( { model | discard = [] }, shuffleDeck model.discard )
+
+    else
+        ( model, Cmd.none )
+
+
+type DrawErr
+    = EmptyDeck
+
+
+drawCard : Model -> Result DrawErr Model
 drawCard model =
     case model.deck of
         c :: deck ->
-            ( { model | deck = deck, hand = c :: model.hand }, Cmd.none )
+            Ok
+                { model
+                    | deck = deck
+                    , hand = c :: model.hand
+                    , pendingDraws = model.pendingDraws - 1
+                }
 
         [] ->
-            ( { model | pendingDraws = model.pendingDraws + 1 }, shuffleDeck model.discard )
+            Err EmptyDeck
 
 
 setDeck : List Card -> Model -> Model
@@ -123,13 +168,14 @@ view model =
         Element.column
             [ width fill, centerY, color (rgb 0.8 0.4 0.4), padding 30 ]
         <|
-            List.append
-                [ hand ]
-                [ Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                    { onPress = Just RedrawHand
-                    , label = Element.text "redraw hand"
-                    }
-                ]
+            [ hand
+            , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                { onPress = Just RedrawHand
+                , label = Element.text "redraw hand"
+                }
+            , Element.text <| "discards: " ++ fromInt (List.length model.discard)
+            , Element.text <| "draw deck: " ++ fromInt (List.length model.deck)
+            ]
 
 
 
