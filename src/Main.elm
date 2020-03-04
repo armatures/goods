@@ -29,7 +29,7 @@ init =
 
 shuffleDeck : List Card -> Cmd Msg
 shuffleDeck deck =
-    Random.generate ShuffleDeck (shuffle deck)
+    Random.generate ShuffleDeck ((shuffle >> Random.andThen shuffle) deck)
 
 
 
