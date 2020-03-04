@@ -25,6 +25,7 @@ type RequiredResources
 type ProductionChain
     = ProductionChain1 Good
     | ProductionChain2 Good Good
+    | ProductionChainNone
 
 
 type Good

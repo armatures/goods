@@ -24,15 +24,32 @@ exampleCards =
 
 greens : List Card
 greens =
-    [ Card "Sawmill"
-        (Coins 2)
-        (VPs 2)
-        Green
-        True
-        (Required ( Black, 1 ) ( Red, 2 ))
-        (ProductionChain1 (Resource Green))
-        Lumber
-        (Id 0)
+    [ Card "Sawmill" (Coins 2) (VPs 2) Green False (Required ( White, 3 ) ( Red, 1 )) (ProductionChain1 (Resource Green)) Lumber (Id 0)
+    , Card "Sawmill" (Coins 2) (VPs 2) Green True (Required ( Black, 1 ) ( Red, 3 )) (ProductionChain1 (Resource Green)) Lumber (Id 0)
+    , Card "Sawmill" (Coins 3) (VPs 2) Green True (Required ( Black, 2 ) ( Red, 2 )) (ProductionChain1 (Resource Green)) Lumber (Id 0)
+    , Card "Sawmill" (Coins 3) (VPs 2) Green False (Required ( White, 2 ) ( Red, 2 )) (ProductionChain1 (Resource Green)) Lumber (Id 0)
+    , Card "Sawmill" (Coins 4) (VPs 2) Green False (Required ( Green, 2 ) ( Red, 2 )) (ProductionChain1 (Resource Green)) Lumber (Id 0)
+    , Card "Iron Smelter" (Coins 6) (VPs 2) Green False (Required ( Black, 1 ) ( Red, 3 )) (ProductionChain2 (Resource Black) (ProductionGood Coal)) Metal (Id 0)
+    , Card "Iron Smelter" (Coins 6) (VPs 2) Green True (Required ( White, 3 ) ( Red, 1 )) (ProductionChain2 (Resource Black) (ProductionGood Coal)) Metal (Id 0)
+    , Card "Iron Smelter" (Coins 8) (VPs 2) Green True (Required ( Black, 2 ) ( Yellow, 2 )) (ProductionChain2 (Resource Black) (ProductionGood Coal)) Metal (Id 0)
+    , Card "Iron Smelter" (Coins 8) (VPs 2) Green False (Required ( Yellow, 2 ) ( Red, 2 )) (ProductionChain2 (Resource Black) (ProductionGood Coal)) Metal (Id 0)
+    , Card "Iron Smelter" (Coins 8) (VPs 2) Green False (Required ( Black, 2 ) ( White, 2 )) (ProductionChain2 (Resource Black) (ProductionGood Coal)) Metal (Id 0)
+    , Card "Iron Smelter" (Coins 9) (VPs 2) Green True (Required ( Yellow, 2 ) ( Green, 2 )) (ProductionChain2 (Resource Black) (ProductionGood Coal)) Metal (Id 0)
+    , Card "Cooperage" (Coins 11) (VPs 3) Green False (Required ( Black, 2 ) ( Red, 3 )) (ProductionChain1 (ProductionGood Lumber)) Barrel (Id 0)
+    , Card "Cooperage" (Coins 11) (VPs 3) Green True (Required ( Yellow, 2 ) ( Red, 3 )) (ProductionChain1 (ProductionGood Lumber)) Barrel (Id 0)
+    , Card "Cooperage" (Coins 11) (VPs 3) Green False (Required ( Black, 3 ) ( White, 2 )) (ProductionChain1 (ProductionGood Lumber)) Barrel (Id 0)
+    , Card "Cooperage" (Coins 11) (VPs 3) Green True (Required ( Yellow, 3 ) ( Red, 2 )) (ProductionChain1 (ProductionGood Lumber)) Barrel (Id 0)
+    , Card "Tool Maker" (Coins 15) (VPs 4) Green False (Required ( Yellow, 3 ) ( Red, 3 )) (ProductionChain2 (ProductionGood Coal) (ProductionGood Metal)) Tool (Id 0)
+    , Card "Tool Maker" (Coins 17) (VPs 4) Green True (Required ( Green, 4 ) ( White, 2 )) (ProductionChain2 (ProductionGood Coal) (ProductionGood Metal)) Tool (Id 0)
+    , Card "Tool Maker" (Coins 17) (VPs 4) Green True (Required ( Green, 3 ) ( White, 3 )) (ProductionChain2 (ProductionGood Coal) (ProductionGood Metal)) Tool (Id 0)
+    , Card "Tool Maker" (Coins 17) (VPs 4) Green False (Required ( Black, 3 ) ( Green, 3 )) (ProductionChain2 (ProductionGood Coal) (ProductionGood Metal)) Tool (Id 0)
+    , Card "Glassmaker" (Coins 2) (VPs 2) Green True (Any 12) ProductionChainNone Glass (Id 0)
+    , Card "Glassmaker" (Coins 2) (VPs 2) Green False (Any 12) ProductionChainNone Glass (Id 0)
+    , Card "Glassmaker" (Coins 5) (VPs 2) Green False (Any 11) ProductionChainNone Glass (Id 0)
+    , Card "Glassmaker" (Coins 5) (VPs 2) Green True (Any 11) ProductionChainNone Glass (Id 0)
+    , Card "Window Manufacture" (Coins 7) (VPs 3) Green True (Required ( Black, 1 ) ( Yellow, 4 )) (ProductionChain2 (ProductionGood Lumber) (ProductionGood Glass)) Window (Id 0)
+    , Card "Window Manufacture" (Coins 9) (VPs 3) Green True (Required ( Black, 2 ) ( Red, 3 )) (ProductionChain2 (ProductionGood Lumber) (ProductionGood Glass)) Window (Id 0)
+    , Card "Window Manufacture" (Coins 9) (VPs 3) Green False (Required ( White, 3 ) ( Red, 2 )) (ProductionChain2 (ProductionGood Lumber) (ProductionGood Glass)) Window (Id 0)
     ]
 
 

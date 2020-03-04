@@ -10,6 +10,8 @@ import Element.Input as Input
 import Html exposing (Html)
 import Random
 import Random.List exposing (shuffle)
+import Result exposing (Result(..))
+import String exposing (fromInt)
 
 
 
