@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Card exposing (Card, Good, ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), charburnerForIndex, colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints)
+import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), charburnerForIndex, colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints)
 import CardList exposing (allCards)
 import Cards exposing (Model, TurnPhase(..))
 import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, spacing, width)
@@ -195,23 +195,22 @@ view model =
                 middle =
                     Element.el [ centerX ] <| productionGoodIcon productionGood
 
-                chain t =
-                    Element.column []
-                        [ Element.text "⛓⛓⛓"
-                        , goodIcon t
-                        , Element.text "⛓⛓⛓"
-                        ]
-
                 right =
                     Element.el [ alignRight ] <|
                         case productionChain of
                             ProductionChain1 good ->
-                                chain good
+                                Element.column []
+                                    [ Element.text "⛓⛓⛓"
+                                    , goodIcon good
+                                    , Element.text "⛓⛓⛓"
+                                    ]
 
                             ProductionChain2 good good2 ->
                                 Element.column []
-                                    [ chain good
-                                    , chain good2
+                                    [ Element.text "⛓⛓⛓"
+                                    , goodIcon good
+                                    , goodIcon good2
+                                    , Element.text "⛓⛓⛓"
                                     ]
 
                             ProductionChainNone ->
@@ -235,7 +234,19 @@ view model =
                     , Element.el [ alignRight ] <| Element.text <| showVictoryPoints card.victoryPoints
                     ]
                 , Element.el [ centerX, centerY ] (Element.text card.name)
+                , cardBottom card.cardType
                 ]
+
+        cardBottom card =
+            case card of
+                MarketOffice BonusDraw ->
+                    Element.text "draw a bonus card if you have <4 cards in draw phase"
+
+                MarketOffice (Discount resource) ->
+                    Element.row [] [ Element.text "discount on ", resourceIcon resource ]
+
+                ProductionCard productionCardRecord ->
+                    productionCardBottom productionCardRecord
 
         turnPhaseContent : List (Element Msg)
         turnPhaseContent =
