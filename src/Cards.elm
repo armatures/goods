@@ -10,15 +10,14 @@ type alias Model =
     , hand : List Card
     , discard : List Card
     , pendingDraws : Int
+    , currentPhase : TurnPhase
     }
 
 
-{-| what cards are in the player's hand?
-returns the hand cards sorted by index in the hand.
--}
-handCards : Model -> List Card
-handCards cards =
-    cards.hand
+type TurnPhase
+    = Draw
+    | AssignWork
+    | ChainProduction
 
 
 isInHand : Card -> Model -> Bool

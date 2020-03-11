@@ -4,7 +4,7 @@ import String exposing (fromInt)
 
 
 type alias Card =
-    -- cannot yet handle Charburner or Market Office
+    -- cannot yet handle Charburner
     { name : String
     , cost : Coins
     , victoryPoints : VPs

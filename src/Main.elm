@@ -3,7 +3,7 @@ module Main exposing (..)
 import Browser
 import Card exposing (Card, Resource(..), showCoins, showVictoryPoints)
 import CardList exposing (exampleCards)
-import Cards exposing (Model, handCards)
+import Cards exposing (Model, TurnPhase(..))
 import Element exposing (alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, spacing, width)
 import Element.Background exposing (color)
 import Element.Input as Input
@@ -22,7 +22,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         model =
-            { deck = [], hand = [], discard = [], pendingDraws = 5 }
+            { deck = [], hand = [], discard = [], pendingDraws = 5, currentPhase = Draw }
     in
     ( model, shuffleDeck exampleCards )
 
@@ -37,7 +37,7 @@ shuffleDeck deck =
 
 
 type Msg
-    = RedrawHand
+    = StartDay Bool
     | ShuffleDeck (List Card)
     | DrawCard
 
@@ -45,13 +45,18 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        RedrawHand ->
-            drawCardIfNeeded
-                { model
-                    | discard = model.discard ++ model.hand
-                    , pendingDraws = List.length model.hand
-                    , hand = []
-                }
+        StartDay redrawHand ->
+            if redrawHand then
+                drawCardIfNeeded
+                    { model
+                        | discard = model.discard ++ model.hand
+                        , pendingDraws = List.length model.hand
+                        , hand = []
+                        , currentPhase = AssignWork
+                    }
+
+            else
+                drawCardIfNeeded { model | currentPhase = AssignWork }
 
         ShuffleDeck newDeck ->
             let
@@ -150,10 +155,13 @@ view model =
                     Element.Background.color (rgb 0.2 0.2 0.2)
 
         hand =
-            Element.row [ padding 20, spacing 10 ]
-                (handCards model
-                    |> List.map showCard
-                )
+            Element.column [ padding 20, spacing 10 ]
+                [ Element.text "Hand"
+                , Element.row [ padding 20, spacing 10 ]
+                    (model.hand
+                        |> List.map showCard
+                    )
+                ]
 
         showCard card =
             Element.column [ colorForCard card, height (px 200), width (px 200) ]
@@ -168,14 +176,36 @@ view model =
         Element.column
             [ width fill, centerY, color (rgb 0.8 0.4 0.4), padding 30 ]
         <|
-            [ hand
-            , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                { onPress = Just RedrawHand
-                , label = Element.text "redraw hand"
-                }
-            , Element.text <| "discards: " ++ fromInt (List.length model.discard)
-            , Element.text <| "draw deck: " ++ fromInt (List.length model.deck)
-            ]
+            case model.currentPhase of
+                Draw ->
+                    [ hand
+                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                        { onPress = Just StartDay
+                        , label = Element.text "redraw hand and start the day"
+                        }
+                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                        { onPress = Just StartDay
+                        , label = Element.text "keep these cards and start the day"
+                        }
+                    , Element.text <| "discards: " ++ fromInt (List.length model.discard)
+                    , Element.text <| "draw deck: " ++ fromInt (List.length model.deck)
+                    ]
+
+                AssignWork ->
+                    [ Element.text "assign work now"
+                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                        { onPress = Just StartDay
+                        , label = Element.text "Done Assigning Work and Choosing a Building"
+                        }
+                    ]
+
+                ChainProduction ->
+                    [ Element.text "chain production now"
+                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                        { onPress = Just StartDay
+                        , label = Element.text "Done Chaining"
+                        }
+                    ]
 
 
 

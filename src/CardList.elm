@@ -1,12 +1,5 @@
 module CardList exposing (..)
 
-{-|
-
-    Is this API usable? Aside from Black and Blue cards, which it can't handle, awkward bits are:
-    ProductionChain1 and ProductionChain2, to express having 1 or 2 inputs
-
--}
-
 import Card exposing (Card, CardType(..), Coins(..), Good(..), Id(..), MarketOfficeType(..), ProductionChain(..), ProductionGood(..), RequiredResources(..), Resource(..), VPs(..))
 
 
