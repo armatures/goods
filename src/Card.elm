@@ -1,5 +1,7 @@
 module Card exposing (..)
 
+import Element exposing (Attr, Element, rgb)
+import Element.Background
 import String exposing (fromInt)
 
 
@@ -16,12 +18,44 @@ type alias Card =
 
 
 type CardType
-    = ProductionCard
-        { requiredResources : RequiredResources
-        , productionChain : ProductionChain
-        , productionGood : ProductionGood
-        }
+    = ProductionCard ProductionCardRecord
     | MarketOffice MarketOfficeType
+
+
+type alias ProductionCardRecord =
+    { requiredResources : RequiredResources
+    , productionChain : ProductionChain
+    , productionGood : ProductionGood
+    }
+
+
+type TableauCard
+    = Charburner ProductionCardRecord
+    | NotCharburner Card
+
+
+charburnerForIndex : Int -> TableauCard
+charburnerForIndex charBurnerIndex =
+    let
+        charburnerResource =
+            case charBurnerIndex of
+                0 ->
+                    Black
+
+                1 ->
+                    Yellow
+
+                2 ->
+                    Red
+
+                _ ->
+                    White
+    in
+    Charburner <|
+        ProductionCardRecord
+            (Required ( charburnerResource, 2 ) ( Green, 1 ))
+            (ProductionChain1 (Resource Green))
+            Coal
 
 
 type MarketOfficeType
@@ -65,6 +99,45 @@ type Resource
     | Red
     | White
     | Black
+
+
+displayResource : Resource -> DisplayResource d msg
+displayResource resource =
+    case resource of
+        Red ->
+            DisplayResource "clay" <| Element.Background.color (rgb 0.8 0.5 0.5)
+
+        Yellow ->
+            DisplayResource "clay" <| Element.Background.color (rgb 0.8 0.8 0.5)
+
+        Green ->
+            DisplayResource "wood" <| Element.Background.color (rgb 0.5 0.8 0.5)
+
+        White ->
+            DisplayResource "cotton" <| Element.Background.color (rgb 0.8 0.8 0.8)
+
+        Black ->
+            DisplayResource "ore" <| Element.Background.color (rgb 0.2 0.2 0.2)
+
+
+type alias DisplayResource d msg =
+    { asText : String
+    , asColor : Attr d msg
+    }
+
+
+resourceIcon : Resource -> Element msg
+resourceIcon resource =
+    let
+        { asText, asColor } =
+            displayResource resource
+    in
+    Element.el [ asColor ] <| Element.text asText
+
+
+colorForResource : Resource -> Attr d msg
+colorForResource =
+    .asColor << displayResource
 
 
 valueOfProductionGood : ProductionGood -> Coins
@@ -141,6 +214,62 @@ type ProductionGood
     | Tool
     | Meat
     | Food
+
+
+productionGoodIcon : ProductionGood -> Element msg
+productionGoodIcon good =
+    Element.text <|
+        case good of
+            Coal ->
+                "Coal"
+
+            Brick ->
+                "Brick"
+
+            Flour ->
+                "Flour"
+
+            Lumber ->
+                "Lumber"
+
+            Metal ->
+                "Metal"
+
+            Cattle ->
+                "Cattle"
+
+            Fabric ->
+                "Fabric"
+
+            Glass ->
+                "Glass"
+
+            Shirt ->
+                "Shirt"
+
+            Bread ->
+                "Bread"
+
+            Barrel ->
+                "Barrel"
+
+            Window ->
+                "Window"
+
+            Leather ->
+                "Leather"
+
+            Shoes ->
+                "Shoes"
+
+            Tool ->
+                "Tool"
+
+            Meat ->
+                "Meat"
+
+            Food ->
+                "Food"
 
 
 type alias Index =

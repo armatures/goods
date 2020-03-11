@@ -1,6 +1,6 @@
 module Cards exposing (..)
 
-import Card exposing (Card, Index)
+import Card exposing (Card, Good(..), Index, ProductionCardRecord, Resource, TableauCard)
 import Random exposing (Generator)
 import Random.List exposing (shuffle)
 
@@ -11,7 +11,7 @@ type alias Model =
     , discard : List Card
     , pendingDraws : Int
     , currentPhase : TurnPhase
-    , tableau : Int
+    , tableau : List TableauCard
     }
 
 

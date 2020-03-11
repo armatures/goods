@@ -1,8 +1,8 @@
 module Main exposing (..)
 
 import Browser
-import Card exposing (Card, Resource(..), showCoins, showVictoryPoints)
-import CardList exposing (exampleCards)
+import Card exposing (Card, Good, ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), charburnerForIndex, colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints)
+import CardList exposing (allCards)
 import Cards exposing (Model, TurnPhase(..))
 import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, spacing, width)
 import Element.Background exposing (color)
@@ -27,9 +27,15 @@ init : Flags -> ( Model, Cmd Msg )
 init { charBurnerIndex } =
     let
         model =
-            { deck = [], hand = [], discard = [], pendingDraws = 5, currentPhase = Draw, tableau = charBurnerIndex }
+            { deck = []
+            , hand = []
+            , discard = []
+            , pendingDraws = 5
+            , currentPhase = Draw
+            , tableau = [ charburnerForIndex charBurnerIndex ]
+            }
     in
-    ( model, shuffleDeck exampleCards )
+    ( model, shuffleDeck allCards )
 
 
 shuffleDeck : List Card -> Cmd Msg
@@ -142,31 +148,11 @@ setDeck deck cards =
 view : Model -> Html Msg
 view model =
     let
-        colorForCard card =
-            case card.resource of
-                Red ->
-                    Element.Background.color (rgb 0.8 0.5 0.5)
-
-                Yellow ->
-                    Element.Background.color (rgb 0.8 0.8 0.5)
-
-                Green ->
-                    Element.Background.color (rgb 0.5 0.8 0.5)
-
-                White ->
-                    Element.Background.color (rgb 0.8 0.8 0.8)
-
-                Black ->
-                    Element.Background.color (rgb 0.2 0.2 0.2)
-
         tableau =
             Element.column [ padding 20, spacing 10, color (rgb 0.4 0.4 0.4), width fill ]
                 [ Element.text "Tableau"
                 , Element.row [ padding 20, spacing 10 ]
-                    [ (Element.text <| fromInt model.tableau
-                       --|> List.map showCard
-                      )
-                    ]
+                    (List.map showTableauCard model.tableau)
                 ]
 
         hand =
@@ -178,13 +164,77 @@ view model =
                     )
                 ]
 
+        showTableauCard c =
+            case c of
+                Charburner pCard ->
+                    Element.column [ color (rgb 0.3 0.6 1.0), height (px 200), width (px 200) ]
+                        [ Element.el [ centerX ] (Element.text "Charburner")
+                        , productionCardBottom pCard
+                        ]
+
+                NotCharburner card ->
+                    showCard card
+
+        productionCardBottom : ProductionCardRecord -> Element Msg
+        productionCardBottom { requiredResources, productionGood, productionChain } =
+            let
+                left =
+                    case requiredResources of
+                        Any count ->
+                            Element.el [ color (rgb 0.3 0.3 0.3) ] (Element.text <| fromInt count)
+
+                        Required required1 required2 ->
+                            Element.column [ spacing 10, padding 10 ]
+                                [ requiredResource required1
+                                , requiredResource required2
+                                ]
+
+                requiredResource ( r, count ) =
+                    Element.el [ colorForResource r, width (px 20), height (px 20) ] (Element.text <| fromInt count)
+
+                middle =
+                    Element.el [ centerX ] <| productionGoodIcon productionGood
+
+                chain t =
+                    Element.column []
+                        [ Element.text "⛓⛓⛓"
+                        , goodIcon t
+                        , Element.text "⛓⛓⛓"
+                        ]
+
+                right =
+                    Element.el [ alignRight ] <|
+                        case productionChain of
+                            ProductionChain1 good ->
+                                chain good
+
+                            ProductionChain2 good good2 ->
+                                Element.column []
+                                    [ chain good
+                                    , chain good2
+                                    ]
+
+                            ProductionChainNone ->
+                                Element.none
+
+                goodIcon : Good -> Element Msg
+                goodIcon good =
+                    case good of
+                        Card.Resource r ->
+                            resourceIcon r
+
+                        Card.ProductionGood p ->
+                            productionGoodIcon p
+            in
+            Element.row [ width fill ] [ left, middle, right ]
+
         showCard card =
-            Element.column [ colorForCard card, height (px 200), width (px 200) ]
+            Element.column [ colorForResource card.resource, height (px 200), width (px 200) ]
                 [ Element.row [ padding 5, width fill ]
                     [ Element.el [ alignLeft ] <| Element.text <| showCoins card.cost
                     , Element.el [ alignRight ] <| Element.text <| showVictoryPoints card.victoryPoints
                     ]
-                , Element.el [ centerX ] (Element.text card.name)
+                , Element.el [ centerX, centerY ] (Element.text card.name)
                 ]
 
         turnPhaseContent : List (Element Msg)

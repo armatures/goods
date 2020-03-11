@@ -3,8 +3,8 @@ module CardList exposing (..)
 import Card exposing (Card, CardType(..), Coins(..), Good(..), Id(..), MarketOfficeType(..), ProductionChain(..), ProductionGood(..), RequiredResources(..), Resource(..), VPs(..))
 
 
-exampleCards : List Card
-exampleCards =
+allCards : List Card
+allCards =
     List.concat
         [ reds
         , whites
