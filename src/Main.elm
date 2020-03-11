@@ -4,7 +4,7 @@ import Browser
 import Card exposing (Card, Resource(..), showCoins, showVictoryPoints)
 import CardList exposing (exampleCards)
 import Cards exposing (Model, TurnPhase(..))
-import Element exposing (alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, spacing, width)
+import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, spacing, width)
 import Element.Background exposing (color)
 import Element.Input as Input
 import Html exposing (Html)
@@ -18,11 +18,16 @@ import String exposing (fromInt)
 ---- MODEL ----
 
 
-init : ( Model, Cmd Msg )
-init =
+type alias Flags =
+    { charBurnerIndex : Int
+    }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init { charBurnerIndex } =
     let
         model =
-            { deck = [], hand = [], discard = [], pendingDraws = 5, currentPhase = Draw }
+            { deck = [], hand = [], discard = [], pendingDraws = 5, currentPhase = Draw, tableau = charBurnerIndex }
     in
     ( model, shuffleDeck exampleCards )
 
@@ -154,8 +159,18 @@ view model =
                 Black ->
                     Element.Background.color (rgb 0.2 0.2 0.2)
 
+        tableau =
+            Element.column [ padding 20, spacing 10, color (rgb 0.4 0.4 0.4), width fill ]
+                [ Element.text "Tableau"
+                , Element.row [ padding 20, spacing 10 ]
+                    [ (Element.text <| fromInt model.tableau
+                       --|> List.map showCard
+                      )
+                    ]
+                ]
+
         hand =
-            Element.column [ padding 20, spacing 10 ]
+            Element.column [ padding 20, spacing 10, color (rgb 0.0 0.4 0.4), width fill ]
                 [ Element.text "Hand"
                 , Element.row [ padding 20, spacing 10 ]
                     (model.hand
@@ -171,20 +186,19 @@ view model =
                     ]
                 , Element.el [ centerX ] (Element.text card.name)
                 ]
-    in
-    Element.layout [] <|
-        Element.column
-            [ width fill, centerY, color (rgb 0.8 0.4 0.4), padding 30 ]
-        <|
+
+        turnPhaseContent : List (Element Msg)
+        turnPhaseContent =
             case model.currentPhase of
                 Draw ->
-                    [ hand
+                    [ tableau
+                    , hand
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just StartDay
+                        { onPress = Just (StartDay True)
                         , label = Element.text "redraw hand and start the day"
                         }
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just StartDay
+                        { onPress = Just (StartDay False)
                         , label = Element.text "keep these cards and start the day"
                         }
                     , Element.text <| "discards: " ++ fromInt (List.length model.discard)
@@ -192,31 +206,41 @@ view model =
                     ]
 
                 AssignWork ->
-                    [ Element.text "assign work now"
+                    [ tableau
+                    , hand
+                    , Element.text "assign work now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just StartDay
+                        { onPress = Just (StartDay True)
                         , label = Element.text "Done Assigning Work and Choosing a Building"
                         }
                     ]
 
                 ChainProduction ->
-                    [ Element.text "chain production now"
+                    [ tableau
+                    , hand
+                    , Element.text "chain production now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just StartDay
+                        { onPress = Just (StartDay False)
                         , label = Element.text "Done Chaining"
                         }
                     ]
+    in
+    Element.layout []
+        (Element.column
+            [ width fill, centerY, padding 30 ]
+            turnPhaseContent
+        )
 
 
 
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
     Browser.element
         { view = view
-        , init = \_ -> init
+        , init = init
         , update = update
         , subscriptions = always Sub.none
         }

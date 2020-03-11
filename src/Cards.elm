@@ -11,6 +11,7 @@ type alias Model =
     , discard : List Card
     , pendingDraws : Int
     , currentPhase : TurnPhase
+    , tableau : Int
     }
 
 
