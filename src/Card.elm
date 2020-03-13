@@ -105,7 +105,7 @@ displayResource : Resource -> DisplayResource d msg
 displayResource resource =
     case resource of
         Red ->
-            { asText = "clay", asColor = Element.Background.color (rgb255 157 28 46) }
+            { asText = "clay", asColor = Element.Background.gradient { angle = 0, steps = [ rgb255 157 28 46, rgb255 200 48 66 ] } }
 
         Yellow ->
             { asText = "wheat", asColor = Element.Background.color (rgb255 238 217 46) }
@@ -117,7 +117,7 @@ displayResource resource =
             { asText = "cotton", asColor = Element.Background.color (rgb255 196 208 220) }
 
         Black ->
-            { asText = "ore", asColor = Element.Background.color (rgb 0.2 0.2 0.2) }
+            { asText = "ore", asColor = Element.Background.gradient { angle = 0, steps = [ rgb255 35 45 72, rgb255 125 124 122 ] } }
 
 
 type alias DisplayResource d msg =
