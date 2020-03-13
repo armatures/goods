@@ -125,7 +125,7 @@ drawCard model =
             Ok
                 { model
                     | deck = deck
-                    , hand = c :: model.hand
+                    , hand = model.hand ++ [ c ]
                     , pendingDraws = model.pendingDraws - 1
                 }
 
