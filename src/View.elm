@@ -48,7 +48,7 @@ view model =
                 left =
                     case requiredResources of
                         Any count ->
-                            Element.el [ color (rgb 0.3 0.3 0.3) ] (Element.text <| fromInt count)
+                            Element.el [ color (rgb 0.3 0.3 0.3) ] (Element.text <| fromInt count ++ "?")
 
                         Required required1 required2 ->
                             Element.column [ spacing 10, padding 10 ]
