@@ -104,8 +104,10 @@ shuffleHalfOfHandIntoDeck model =
     )
 
 
-{-| draw cards until you have no more pending draws, or the deck runs out
+{-| draw cards until you have no more pending draws, or the deck runs out.
+
 call this to fill the resources each phase, too.
+
 -}
 drawCardIfNeeded : Model -> ( Model, Cmd Msg )
 drawCardIfNeeded model =

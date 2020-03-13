@@ -1,0 +1,7 @@
+We draw cards from the deck and place them as resources for the day.
+Also, drawn cards sometimes go to hands.
+If the cards ever run out, we need to steal half of everyone's hands and shuffle them to remake the deck.
+Because this needs a random input from Cmd, this needs to be handled at the top level of the app. Currently there are pending draws, but after we do this shuffling we could also check on the other states in the app that could have led to a draw:
+  - there should be 4 half-suns in the evening, and
+  - 2 half-suns in the morning.
+So these things get added to the same function that may return an "EmptyDeck" error, and this function is made idempotent. It can infer whether you need to draw things to any destination, so you need to call it from every branch of the `update` function.
