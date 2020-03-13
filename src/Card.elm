@@ -1,6 +1,6 @@
 module Card exposing (..)
 
-import Element exposing (Attr, Element, rgb)
+import Element exposing (Attr, Element, rgb, rgb255)
 import Element.Background
 import String exposing (fromInt)
 
@@ -105,16 +105,16 @@ displayResource : Resource -> DisplayResource d msg
 displayResource resource =
     case resource of
         Red ->
-            { asText = "clay", asColor = Element.Background.color (rgb 0.8 0.5 0.5) }
+            { asText = "clay", asColor = Element.Background.color (rgb255 157 28 46) }
 
         Yellow ->
-            { asText = "wheat", asColor = Element.Background.color (rgb 0.8 0.8 0.5) }
+            { asText = "wheat", asColor = Element.Background.color (rgb255 238 217 46) }
 
         Green ->
-            { asText = "wood", asColor = Element.Background.color (rgb 0.5 0.8 0.5) }
+            { asText = "wood", asColor = Element.Background.color (rgb255 93 158 30) }
 
         White ->
-            { asText = "cotton", asColor = Element.Background.color (rgb 0.8 0.8 0.8) }
+            { asText = "cotton", asColor = Element.Background.color (rgb255 196 208 220) }
 
         Black ->
             { asText = "ore", asColor = Element.Background.color (rgb 0.2 0.2 0.2) }

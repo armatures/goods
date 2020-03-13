@@ -4,7 +4,7 @@ import Browser
 import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), charburnerForIndex, colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints)
 import CardList exposing (allCards)
 import Cards exposing (Model, TurnPhase(..))
-import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, spacing, width)
+import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, spacing, width)
 import Element.Background exposing (color)
 import Element.Input as Input
 import Html exposing (Html)
@@ -167,7 +167,7 @@ view model =
         showTableauCard c =
             case c of
                 Charburner pCard ->
-                    Element.column [ color (rgb 0.3 0.6 1.0), height (px 200), width (px 200) ]
+                    Element.column [ color (rgb255 92 137 192), height (px 200), width (px 200) ]
                         [ Element.el [ centerX ] (Element.text "Charburner")
                         , productionCardBottom pCard
                         ]
