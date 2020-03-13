@@ -2,12 +2,13 @@ module View exposing (..)
 
 ---- VIEW ----
 
-import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints)
+import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints, sortResources)
 import Cards exposing (Model, TurnPhase(..))
-import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, spacing, width)
-import Element.Background exposing (color)
+import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, row, spacing, width)
+import Element.Background as Background exposing (color)
 import Element.Input as Input
 import Html exposing (Html)
+import List.Extra exposing (group)
 import Msg exposing (Msg(..))
 import String exposing (fromInt)
 
@@ -15,12 +16,30 @@ import String exposing (fromInt)
 view : Model -> Html Msg
 view model =
     let
-        tableau =
-            Element.column [ padding 20, spacing 10, color (rgb 0.4 0.4 0.4), width fill ]
-                [ Element.text "Tableau"
-                , Element.row [ padding 20, spacing 10 ]
-                    (List.map showTableauCard model.tableau)
+        tableau : List Card -> Element Msg
+        tableau resources =
+            Element.row [ padding 20, spacing 10, width fill ]
+                [ Element.column [ color (rgb 0.4 0.4 0.4), spacing 10, padding 20 ]
+                    [ Element.text "Tableau"
+                    , Element.row [ padding 20, spacing 10 ]
+                        (List.map showTableauCard model.tableau)
+                    ]
+                , Element.column [ height fill, color (rgb 0.3 0.4 0.4), spacing 10, padding 20 ]
+                    (Element.text "Today's Resources"
+                        :: showDayResources resources
+                    )
                 ]
+
+        showDayResources : List Card -> List (Element Msg)
+        showDayResources cards =
+            List.map .resource cards
+                |> sortResources
+                |> group
+                |> List.map (Tuple.mapSecond (List.length >> (+) 1))
+                |> List.map
+                    (\( r, count ) ->
+                        Element.el [ colorForResource r, width (px 20), height (px 20) ] (Element.text <| fromInt count)
+                    )
 
         hand =
             Element.column [ padding 20, spacing 10, color (rgb 0.0 0.4 0.4), width fill ]
@@ -119,22 +138,24 @@ view model =
         turnPhaseContent =
             case model.currentPhase of
                 Draw ->
-                    [ tableau
+                    [ tableau []
                     , hand
-                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just (StartDay True)
-                        , label = Element.text "redraw hand and start the day"
-                        }
-                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just (StartDay False)
-                        , label = Element.text "keep these cards and start the day"
-                        }
+                    , row [ spacing 10 ]
+                        [ Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                            { onPress = Just (StartDay True)
+                            , label = Element.text "redraw hand and start the day"
+                            }
+                        , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                            { onPress = Just (StartDay False)
+                            , label = Element.text "keep these cards and start the day"
+                            }
+                        ]
                     , Element.text <| "discards: " ++ fromInt (List.length model.discard)
                     , Element.text <| "draw deck: " ++ fromInt (List.length model.deck)
                     ]
 
-                AssignWork ->
-                    [ tableau
+                AssignWork { resources } ->
+                    [ tableau resources
                     , hand
                     , Element.text "assign work now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
@@ -143,8 +164,8 @@ view model =
                         }
                     ]
 
-                ChainProduction ->
-                    [ tableau
+                ChainProduction { resources } ->
+                    [ tableau resources
                     , hand
                     , Element.text "chain production now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
@@ -153,8 +174,8 @@ view model =
                         }
                     ]
     in
-    Element.layout []
+    Element.layout [ Background.color (rgb 0.3 0.2 0.1) ]
         (Element.column
-            [ width fill, centerY, padding 30 ]
+            [ width fill, padding 30, spacing 10 ]
             turnPhaseContent
         )

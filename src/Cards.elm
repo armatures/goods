@@ -22,13 +22,21 @@ mapPendingDraws f model =
 
 type TurnPhase
     = Draw
-    | AssignWork
-    | ChainProduction
+    | AssignWork AssignWorkRecord
+    | ChainProduction ChainProductionRecord
+
+
+type alias AssignWorkRecord =
+    { resources : List Card }
+
+
+type alias ChainProductionRecord =
+    { resources : List Card }
 
 
 isInHand : Card -> Model -> Bool
 isInHand card cards =
-    List.member card <| .hand cards
+    List.member card <| cards.hand
 
 
 isInDeck : Card -> Model -> Bool

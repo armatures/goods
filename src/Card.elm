@@ -101,6 +101,29 @@ type Resource
     | Black
 
 
+sortResources : List Resource -> List Resource
+sortResources =
+    let
+        toComparable r =
+            case r of
+                Yellow ->
+                    0
+
+                Green ->
+                    1
+
+                Red ->
+                    2
+
+                White ->
+                    3
+
+                Black ->
+                    5
+    in
+    List.sortBy toComparable
+
+
 displayResource : Resource -> DisplayResource d msg
 displayResource resource =
     case resource of

@@ -3,7 +3,8 @@ module Main exposing (..)
 import Browser
 import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), charburnerForIndex)
 import CardList exposing (allCards)
-import Cards exposing (Model, TurnPhase(..), mapPendingDraws)
+import Cards exposing (ChainProductionRecord, Model, TurnPhase(..), mapPendingDraws)
+import List.Extra
 import Msg exposing (Msg(..))
 import Random
 import Random.List exposing (shuffle)
@@ -57,7 +58,7 @@ update msg model =
                     }
 
                 newModel =
-                    { model | currentPhase = AssignWork }
+                    { model | currentPhase = AssignWork { resources = [] } }
                         |> mapPendingDraws ((+) 2)
             in
             if redrawHand then
@@ -70,23 +71,11 @@ update msg model =
             let
                 newModel =
                     setDeck newDeck model
-
-                handSize =
-                    List.length model.hand
-
-                firstHalfOfHand =
-                    List.take (handSize // 2) newModel.hand
-
-                secondHalfOfHand =
-                    List.drop (handSize // 2) newModel.hand
             in
             if newModel.pendingDraws > 0 then
                 case drawCard newModel of
                     Err EmptyDeck ->
-                        -- if the discard is out, instead of letting them choose, they lose the second half of their hand
-                        ( { newModel | discard = [], hand = firstHalfOfHand }
-                        , shuffleDeck <| List.concat [ newModel.discard, newModel.deck, secondHalfOfHand ]
-                        )
+                        shuffleHalfOfHandIntoDeck newModel
 
                     Ok m ->
                         drawCardIfNeeded m
@@ -98,24 +87,73 @@ update msg model =
             drawCardIfNeeded { model | pendingDraws = model.pendingDraws + 1 }
 
 
+shuffleHalfOfHandIntoDeck model =
+    let
+        handSize =
+            List.length model.hand
+
+        firstHalfOfHand =
+            List.take (handSize // 2) model.hand
+
+        secondHalfOfHand =
+            List.drop (handSize // 2) model.hand
+    in
+    -- if the discard is out, instead of letting them choose, they lose the second half of their hand
+    ( { model | discard = [], hand = firstHalfOfHand }
+    , shuffleDeck <| List.concat [ model.discard, model.deck, secondHalfOfHand ]
+    )
+
+
 {-| draw cards until you have no more pending draws, or the deck runs out
+call this to fill the resources each phase, too.
 -}
 drawCardIfNeeded : Model -> ( Model, Cmd Msg )
 drawCardIfNeeded model =
-    if model.pendingDraws > 0 then
-        case drawCard model of
-            Ok m ->
-                drawCardIfNeeded m
+    let
+        drawToHand =
+            model.pendingDraws > 0
 
-            Err EmptyDeck ->
-                ( { model | discard = [] }, shuffleDeck model.discard )
+        draw =
+            if drawToHand then
+                case drawCard model of
+                    Ok m ->
+                        drawCardIfNeeded m
 
-    else
-        ( model, Cmd.none )
+                    Err EmptyDeck ->
+                        ( { model | discard = [] }, shuffleDeck model.discard )
+
+            else
+                ( model, Cmd.none )
+    in
+    case model.currentPhase of
+        Draw ->
+            draw
+
+        AssignWork assignWorkRecord ->
+            if isPendingDrawToResources assignWorkRecord then
+                case drawMorningResources model of
+                    Ok m ->
+                        drawCardIfNeeded m
+
+                    Err EmptyDeck ->
+                        ( { model | discard = [] }, shuffleDeck model.discard )
+
+            else
+                draw
+
+        ChainProduction chainProductionRecord ->
+            Debug.todo "chaining draw"
 
 
 type DrawErr
     = EmptyDeck
+
+
+isPendingDrawToResources : ChainProductionRecord -> Bool
+isPendingDrawToResources { resources } =
+    List.filter .sun resources
+        |> List.length
+        |> (>) 2
 
 
 drawCard : Model -> Result DrawErr Model
@@ -131,6 +169,35 @@ drawCard model =
 
         [] ->
             Err EmptyDeck
+
+
+type alias Deck =
+    List Card
+
+
+drawMorningResources : Model -> Result DrawErr Model
+drawMorningResources model =
+    let
+        take2Suns : List Card -> ( Deck, List Card )
+        take2Suns =
+            List.foldl
+                (\card ( deck, drawn ) ->
+                    if List.filter .sun drawn |> List.length |> (==) 2 then
+                        ( card :: deck, drawn )
+
+                    else
+                        ( deck, card :: drawn )
+                )
+                ( [], [] )
+
+        ( newDeck, morningResources ) =
+            take2Suns model.deck
+    in
+    if List.filter .sun morningResources |> List.length |> (==) 2 then
+        Ok { model | deck = newDeck, currentPhase = AssignWork { resources = morningResources } }
+
+    else
+        Err EmptyDeck
 
 
 setDeck : List Card -> Model -> Model
