@@ -2,9 +2,9 @@ module View exposing (..)
 
 ---- VIEW ----
 
-import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints, sortResources)
+import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints, sortResources, valueOfProductionGood)
 import Cards exposing (Model, TurnPhase(..))
-import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, row, spacing, width)
+import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, row, spacing, text, width)
 import Element.Background as Background exposing (color)
 import Element.Input as Input
 import Html exposing (Html)
@@ -76,10 +76,13 @@ view model =
                                 ]
 
                 requiredResource ( r, count ) =
-                    Element.el [ colorForResource r, width (px 20), height (px 20) ] (Element.text <| fromInt count)
+                    Element.el [ colorForResource r, width (px 20), height (px 20) ] (fromInt count |> text)
 
                 middle =
-                    Element.el [ centerX ] <| productionGoodIcon productionGood
+                    Element.column [ centerX ]
+                        [ productionGoodIcon productionGood
+                        , valueOfProductionGood productionGood |> showCoins |> text
+                        ]
 
                 right =
                     Element.el [ alignRight ] <|
