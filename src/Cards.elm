@@ -15,6 +15,11 @@ type alias Model =
     }
 
 
+mapPendingDraws : (Int -> Int) -> Model -> Model
+mapPendingDraws f model =
+    { model | pendingDraws = f model.pendingDraws }
+
+
 type TurnPhase
     = Draw
     | AssignWork

@@ -3,7 +3,7 @@ module Main exposing (..)
 import Browser
 import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), charburnerForIndex)
 import CardList exposing (allCards)
-import Cards exposing (Model, TurnPhase(..))
+import Cards exposing (Model, TurnPhase(..), mapPendingDraws)
 import Msg exposing (Msg(..))
 import Random
 import Random.List exposing (shuffle)
@@ -48,17 +48,23 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         StartDay redrawHand ->
-            if redrawHand then
-                drawCardIfNeeded
-                    { model
-                        | discard = model.discard ++ model.hand
-                        , pendingDraws = List.length model.hand
+            let
+                redraw m =
+                    { m
+                        | discard = m.discard ++ m.hand
+                        , pendingDraws = m.pendingDraws + List.length m.hand
                         , hand = []
-                        , currentPhase = AssignWork
                     }
 
+                newModel =
+                    { model | currentPhase = AssignWork }
+                        |> mapPendingDraws ((+) 2)
+            in
+            if redrawHand then
+                drawCardIfNeeded (redraw newModel)
+
             else
-                drawCardIfNeeded { model | currentPhase = AssignWork }
+                drawCardIfNeeded newModel
 
         ShuffleDeck newDeck ->
             let
