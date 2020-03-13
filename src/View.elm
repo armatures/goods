@@ -2,8 +2,9 @@ module View exposing (..)
 
 ---- VIEW ----
 
-import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showCoins, showVictoryPoints, sortResources, valueOfProductionGood)
+import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showVictoryPoints, sortResources, valueOfProductionGood)
 import Cards exposing (Model, TurnPhase(..))
+import Coins exposing (showCoins)
 import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, row, spacing, text, width)
 import Element.Background as Background exposing (color)
 import Element.Input as Input
@@ -54,7 +55,8 @@ view model =
             case c of
                 Charburner pCard ->
                     Element.column [ color (rgb255 92 137 192), height (px 200), width (px 200) ]
-                        [ Element.el [ centerX ] (Element.text "Charburner")
+                        [ Element.el [ centerX ] (text "📦")
+                        , Element.el [ centerX ] (Element.text "Charburner")
                         , productionCardBottom pCard
                         ]
 

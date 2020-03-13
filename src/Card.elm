@@ -1,5 +1,6 @@
 module Card exposing (..)
 
+import Coins exposing (Coins(..))
 import Element exposing (Attr, Element, rgb, rgb255)
 import Element.Background
 import String exposing (fromInt)
@@ -77,15 +78,6 @@ type ProductionChain
 type Good
     = ProductionGood ProductionGood
     | Resource Resource
-
-
-type Coins
-    = Coins Int
-
-
-showCoins : Coins -> String
-showCoins (Coins coins) =
-    fromInt coins ++ "💰"
 
 
 showVictoryPoints : VPs -> String
