@@ -23,7 +23,7 @@ view model =
                     Element.column [ color (rgb 0.5 0.5 0.5), spacing 10, padding 20 ]
                         [ Element.text "Building"
                         , Element.el [ padding 20, spacing 10 ]
-                            (showCard Nothing handCardTop card)
+                            (showCard { clickHandler = Nothing, showCardTop = handCardTop } card)
                         ]
 
                 Nothing ->
@@ -61,7 +61,8 @@ view model =
                 [ Element.text "Hand"
                 , Element.row [ padding 20, spacing 10 ]
                     (model.hand
-                        |> List.map (showCard clickHandler handCardTop)
+                        |> List.map
+                            (showCard { clickHandler = clickHandler, showCardTop = handCardTop })
                     )
                 ]
 
@@ -75,7 +76,7 @@ view model =
                         ]
 
                 NotCharburner goodCount card ->
-                    showCard Nothing (tableauCardTop goodCount) card
+                    showCard { clickHandler = Nothing, showCardTop = tableauCardTop goodCount } card
 
         productionCardBottom : ProductionCardRecord -> Element Msg
         productionCardBottom { requiredResources, productionGood, productionChain } =
@@ -132,8 +133,8 @@ view model =
             in
             Element.row [ width fill ] [ left, middle, right ]
 
-        showCard : Maybe (Card -> Msg) -> (Card -> Element Msg) -> Card -> Element Msg
-        showCard clickHandler cardTop card =
+        showCard : ShowCardRecord -> Card -> Element Msg
+        showCard { clickHandler, showCardTop } card =
             let
                 onClick_ =
                     Maybe.map ((|>) card) clickHandler
@@ -143,7 +144,7 @@ view model =
                 , label =
                     Element.column
                         [ colorForResource card.resource, height (px 200), width (px 200) ]
-                        [ cardTop card
+                        [ showCardTop card
                         , Element.el [ centerX, centerY ] (Element.text card.name)
                         , cardBottom card.cardType
                         ]
@@ -219,3 +220,9 @@ view model =
             [ width fill, padding 30, spacing 10 ]
             turnPhaseContent
         )
+
+
+type alias ShowCardRecord =
+    { clickHandler : Maybe (Card -> Msg)
+    , showCardTop : Card -> Element Msg
+    }
