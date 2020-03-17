@@ -5,6 +5,7 @@ import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), Production
 import CardList exposing (allCards)
 import Cards exposing (ChainProductionRecord, Model, TurnPhase(..), mapPendingDraws)
 import List.Extra
+import Maybe.Extra
 import Msg exposing (Msg(..))
 import Random
 import Random.List exposing (shuffle)
@@ -58,7 +59,7 @@ update msg model =
                     }
 
                 newModel =
-                    { model | currentPhase = AssignWork { resources = [] } }
+                    { model | currentPhase = assignWork [] }
                         |> mapPendingDraws ((+) 2)
             in
             if redrawHand then
@@ -85,6 +86,20 @@ update msg model =
 
         DrawCard ->
             drawCardIfNeeded { model | pendingDraws = model.pendingDraws + 1 }
+
+        ChooseCurrentlyBuilding assignWorkRecord card ->
+            let
+                newModel =
+                    { model
+                        | currentPhase = AssignWork { assignWorkRecord | currentlyBuilding = Just card }
+                        , hand =
+                            List.Extra.remove card model.hand
+                                |> List.append (Maybe.Extra.toList assignWorkRecord.currentlyBuilding)
+                    }
+            in
+            ( newModel
+            , Cmd.none
+            )
 
 
 shuffleHalfOfHandIntoDeck model =
@@ -177,6 +192,13 @@ type alias Deck =
     List Card
 
 
+assignWork morningResources =
+    AssignWork
+        { currentlyBuilding = Nothing
+        , resources = morningResources
+        }
+
+
 drawMorningResources : Model -> Result DrawErr Model
 drawMorningResources model =
     let
@@ -196,7 +218,11 @@ drawMorningResources model =
             take2Suns model.deck
     in
     if List.filter .sun morningResources |> List.length |> (==) 2 then
-        Ok { model | deck = newDeck, currentPhase = AssignWork { resources = morningResources } }
+        Ok
+            { model
+                | deck = newDeck
+                , currentPhase = assignWork morningResources
+            }
 
     else
         Err EmptyDeck

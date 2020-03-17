@@ -1,8 +1,6 @@
 module Cards exposing (..)
 
 import Card exposing (Card, Good(..), Index, ProductionCardRecord, Resource, TableauCard)
-import Random exposing (Generator)
-import Random.List exposing (shuffle)
 
 
 type alias Model =
@@ -27,11 +25,15 @@ type TurnPhase
 
 
 type alias AssignWorkRecord =
-    { resources : List Card }
+    { resources : List Card
+    , currentlyBuilding : Maybe Card
+    }
 
 
 type alias ChainProductionRecord =
-    { resources : List Card }
+    { resources : List Card
+    , currentlyBuilding : Maybe Card
+    }
 
 
 isInHand : Card -> Model -> Bool

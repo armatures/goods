@@ -2,7 +2,7 @@ module View exposing (..)
 
 ---- VIEW ----
 
-import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showVictoryPoints, sortResources, valueOfProductionGood)
+import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showGoodCount, showVictoryPoints, sortResources, valueOfProductionGood)
 import Cards exposing (Model, TurnPhase(..))
 import Coins exposing (showCoins)
 import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, row, spacing, text, width)
@@ -17,14 +17,27 @@ import String exposing (fromInt)
 view : Model -> Html Msg
 view model =
     let
-        tableau : List Card -> Element Msg
-        tableau resources =
+        showCurrentlyBuilding maybeBuildingCard =
+            case maybeBuildingCard of
+                Just card ->
+                    Element.column [ color (rgb 0.5 0.5 0.5), spacing 10, padding 20 ]
+                        [ Element.text "Building"
+                        , Element.el [ padding 20, spacing 10 ]
+                            (showCard Nothing handCardTop card)
+                        ]
+
+                Nothing ->
+                    Element.none
+
+        tableau : Maybe Card -> List Card -> Element Msg
+        tableau currentlyBuilding resources =
             Element.row [ padding 20, spacing 10, width fill ]
                 [ Element.column [ color (rgb 0.4 0.4 0.4), spacing 10, padding 20 ]
                     [ Element.text "Tableau"
                     , Element.row [ padding 20, spacing 10 ]
                         (List.map showTableauCard model.tableau)
                     ]
+                , showCurrentlyBuilding currentlyBuilding
                 , Element.column [ height fill, color (rgb 0.3 0.4 0.4), spacing 10, padding 20 ]
                     (Element.text "Today's Resources"
                         :: showDayResources resources
@@ -42,26 +55,27 @@ view model =
                         Element.el [ colorForResource r, width (px 20), height (px 20) ] (Element.text <| fromInt count)
                     )
 
-        hand =
+        hand : Maybe (Card -> Msg) -> Element Msg
+        hand clickHandler =
             Element.column [ padding 20, spacing 10, color (rgb 0.0 0.4 0.4), width fill ]
                 [ Element.text "Hand"
                 , Element.row [ padding 20, spacing 10 ]
                     (model.hand
-                        |> List.map showCard
+                        |> List.map (showCard clickHandler handCardTop)
                     )
                 ]
 
         showTableauCard c =
             case c of
-                Charburner pCard ->
+                Charburner goodCount pCard ->
                     Element.column [ color (rgb255 92 137 192), height (px 200), width (px 200) ]
-                        [ Element.el [ centerX ] (text "📦")
+                        [ Element.el [ centerX ] (showGoodCount goodCount)
                         , Element.el [ centerX ] (Element.text "Charburner")
                         , productionCardBottom pCard
                         ]
 
-                NotCharburner card ->
-                    showCard card
+                NotCharburner goodCount card ->
+                    showCard Nothing (tableauCardTop goodCount) card
 
         productionCardBottom : ProductionCardRecord -> Element Msg
         productionCardBottom { requiredResources, productionGood, productionChain } =
@@ -118,20 +132,41 @@ view model =
             in
             Element.row [ width fill ] [ left, middle, right ]
 
-        showCard card =
-            Element.column [ colorForResource card.resource, height (px 200), width (px 200) ]
-                [ Element.row [ padding 5, width fill ]
-                    [ Element.el [ alignLeft ] <| Element.text <| showCoins card.cost
-                    , Element.el [ alignRight ] <| Element.text <| showVictoryPoints card.victoryPoints
-                    ]
-                , Element.el [ centerX, centerY ] (Element.text card.name)
-                , cardBottom card.cardType
+        showCard : Maybe (Card -> Msg) -> (Card -> Element Msg) -> Card -> Element Msg
+        showCard clickHandler cardTop card =
+            let
+                onClick_ =
+                    Maybe.map ((|>) card) clickHandler
+            in
+            Input.button []
+                { onPress = onClick_
+                , label =
+                    Element.column
+                        [ colorForResource card.resource, height (px 200), width (px 200) ]
+                        [ cardTop card
+                        , Element.el [ centerX, centerY ] (Element.text card.name)
+                        , cardBottom card.cardType
+                        ]
+                }
+
+        handCardTop card =
+            Element.row [ padding 5, width fill ]
+                [ Element.el [ alignLeft ] <| Element.text <| showCoins card.cost
+                , Element.el [ alignRight ] <| Element.text <| showVictoryPoints card.victoryPoints
+                ]
+
+        tableauCardTop goodCount card =
+            Element.row [ padding 5, width fill ]
+                [ Element.el [ alignRight ] <| Element.text <| showVictoryPoints card.victoryPoints
+                , showGoodCount goodCount
                 ]
 
         cardBottom card =
             case card of
                 MarketOffice BonusDraw ->
-                    Element.text "draw a bonus card if you have <4 cards in draw phase"
+                    Element.paragraph [ width fill ]
+                        [ text "draw a bonus card if you have <4 cards in draw phase"
+                        ]
 
                 MarketOffice (Discount resource) ->
                     Element.row [] [ Element.text "discount on ", resourceIcon resource ]
@@ -143,8 +178,8 @@ view model =
         turnPhaseContent =
             case model.currentPhase of
                 Draw ->
-                    [ tableau []
-                    , hand
+                    [ tableau Nothing []
+                    , hand Nothing
                     , row [ spacing 10 ]
                         [ Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
                             { onPress = Just (StartDay True)
@@ -159,9 +194,9 @@ view model =
                     , Element.text <| "draw deck: " ++ fromInt (List.length model.deck)
                     ]
 
-                AssignWork { resources } ->
-                    [ tableau resources
-                    , hand
+                AssignWork assignWorkRecord ->
+                    [ tableau assignWorkRecord.currentlyBuilding assignWorkRecord.resources
+                    , hand (Just (ChooseCurrentlyBuilding assignWorkRecord))
                     , Element.text "assign work now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
                         { onPress = Just (StartDay True)
@@ -169,9 +204,9 @@ view model =
                         }
                     ]
 
-                ChainProduction { resources } ->
-                    [ tableau resources
-                    , hand
+                ChainProduction { currentlyBuilding, resources } ->
+                    [ tableau currentlyBuilding resources
+                    , hand Nothing
                     , Element.text "chain production now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
                         { onPress = Just (StartDay False)

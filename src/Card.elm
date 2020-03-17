@@ -1,13 +1,12 @@
 module Card exposing (..)
 
 import Coins exposing (Coins(..))
-import Element exposing (Attr, Element, rgb, rgb255)
+import Element exposing (Attr, Element, rgb255, text)
 import Element.Background
 import String exposing (fromInt)
 
 
 type alias Card =
-    -- cannot yet handle Charburner
     { name : String
     , cost : Coins
     , victoryPoints : VPs
@@ -31,8 +30,17 @@ type alias ProductionCardRecord =
 
 
 type TableauCard
-    = Charburner ProductionCardRecord
-    | NotCharburner Card
+    = Charburner Count ProductionCardRecord
+    | NotCharburner Count Card
+
+
+showGoodCount : Count -> Element d
+showGoodCount (Count count) =
+    text <| fromInt count ++ "📦"
+
+
+type Count
+    = Count Int
 
 
 charburnerForIndex : Int -> TableauCard
@@ -52,7 +60,7 @@ charburnerForIndex charBurnerIndex =
                 _ ->
                     White
     in
-    Charburner <|
+    Charburner (Count 7) <|
         ProductionCardRecord
             (Required ( charburnerResource, 2 ) ( Green, 1 ))
             (ProductionChain1 (Resource Green))
