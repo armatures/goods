@@ -2,7 +2,7 @@ module View exposing (..)
 
 ---- VIEW ----
 
-import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showGoodCount, showVictoryPoints, sortResources, valueOfProductionGood)
+import Card exposing (Card, CardType(..), Good, Id, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showGoodCount, showVictoryPoints, sortResources, valueOfProductionGood)
 import Cards exposing (Model, TurnPhase(..))
 import Coins exposing (showCoins)
 import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, row, spacing, text, width)
@@ -17,8 +17,13 @@ import String exposing (fromInt)
 view : Model -> Html Msg
 view model =
     let
-        showCurrentlyBuilding maybeBuildingCard =
-            case maybeBuildingCard of
+        maybeBuildingCard maybeBuildingCardId =
+            maybeBuildingCardId
+                |> Maybe.andThen (\cardId -> List.Extra.find (.id >> (==) cardId) model.hand)
+
+        showCurrentlyBuilding : Maybe Id -> Element Msg
+        showCurrentlyBuilding maybeBuildingCardId =
+            case maybeBuildingCard maybeBuildingCardId of
                 Just card ->
                     Element.column [ color (rgb 0.5 0.5 0.5), spacing 10, padding 20 ]
                         [ Element.text "Building"
@@ -29,7 +34,7 @@ view model =
                 Nothing ->
                     Element.none
 
-        tableau : Maybe Card -> List Card -> Element Msg
+        tableau : Maybe Id -> List Card -> Element Msg
         tableau currentlyBuilding resources =
             Element.row [ padding 20, spacing 10, width fill ]
                 [ Element.column [ color (rgb 0.4 0.4 0.4), spacing 10, padding 20 ]
@@ -197,7 +202,7 @@ view model =
 
                 AssignWork assignWorkRecord ->
                     [ tableau assignWorkRecord.currentlyBuilding assignWorkRecord.resources
-                    , hand (Just (ChooseCurrentlyBuilding assignWorkRecord))
+                    , hand (Just (\c -> ChooseCurrentlyBuilding assignWorkRecord c.id))
                     , Element.text "assign work now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
                         { onPress = Just (EndDay assignWorkRecord)

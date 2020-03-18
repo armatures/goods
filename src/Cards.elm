@@ -1,6 +1,6 @@
 module Cards exposing (..)
 
-import Card exposing (Card, Good(..), Index, ProductionCardRecord, Resource, TableauCard)
+import Card exposing (Card, Good(..), Id, Index, ProductionCardRecord, Resource, TableauCard)
 
 
 type alias Model =
@@ -26,13 +26,13 @@ type TurnPhase
 
 type alias AssignWorkRecord =
     { resources : List Card
-    , currentlyBuilding : Maybe Card
+    , currentlyBuilding : Maybe Id
     }
 
 
 type alias ChainProductionRecord =
     { resources : List Card
-    , currentlyBuilding : Maybe Card
+    , currentlyBuilding : Maybe Id
     }
 
 

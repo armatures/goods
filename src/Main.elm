@@ -4,8 +4,6 @@ import Browser
 import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), charburnerForIndex)
 import CardList exposing (allCards)
 import Cards exposing (AssignWorkRecord, ChainProductionRecord, Model, TurnPhase(..), mapPendingDraws)
-import List.Extra
-import Maybe.Extra
 import Msg exposing (Msg(..))
 import Random
 import Random.List exposing (shuffle)
@@ -87,14 +85,11 @@ update msg model =
         DrawCard ->
             drawCardIfNeeded { model | pendingDraws = model.pendingDraws + 1 }
 
-        ChooseCurrentlyBuilding assignWorkRecord card ->
+        ChooseCurrentlyBuilding assignWorkRecord cardId ->
             let
                 newModel =
                     { model
-                        | currentPhase = AssignWork { assignWorkRecord | currentlyBuilding = Just card }
-                        , hand =
-                            List.Extra.remove card model.hand
-                                |> List.append (Maybe.Extra.toList assignWorkRecord.currentlyBuilding)
+                        | currentPhase = AssignWork { assignWorkRecord | currentlyBuilding = Just cardId }
                     }
             in
             ( newModel

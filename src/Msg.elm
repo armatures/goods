@@ -1,6 +1,6 @@
 module Msg exposing (..)
 
-import Card exposing (Card)
+import Card exposing (Card, Id)
 import Cards exposing (AssignWorkRecord)
 
 
@@ -9,5 +9,5 @@ type Msg
     | EndDay AssignWorkRecord
     | EndTurn
     | ShuffleDeck (List Card)
-    | ChooseCurrentlyBuilding AssignWorkRecord Card
+    | ChooseCurrentlyBuilding AssignWorkRecord Id
     | DrawCard
