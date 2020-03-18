@@ -200,7 +200,7 @@ view model =
                     , hand (Just (ChooseCurrentlyBuilding assignWorkRecord))
                     , Element.text "assign work now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just (StartDay True)
+                        { onPress = Just (EndDay assignWorkRecord)
                         , label = Element.text "Done Assigning Work and Choosing a Building"
                         }
                     ]
@@ -210,7 +210,7 @@ view model =
                     , hand Nothing
                     , Element.text "chain production now"
                     , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just (StartDay False)
+                        { onPress = Just EndTurn
                         , label = Element.text "Done Chaining"
                         }
                     ]

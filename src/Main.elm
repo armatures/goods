@@ -3,7 +3,7 @@ module Main exposing (..)
 import Browser
 import Card exposing (Card, CardType(..), Good, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), charburnerForIndex)
 import CardList exposing (allCards)
-import Cards exposing (ChainProductionRecord, Model, TurnPhase(..), mapPendingDraws)
+import Cards exposing (AssignWorkRecord, ChainProductionRecord, Model, TurnPhase(..), mapPendingDraws)
 import List.Extra
 import Maybe.Extra
 import Msg exposing (Msg(..))
@@ -100,6 +100,21 @@ update msg model =
             ( newModel
             , Cmd.none
             )
+
+        EndDay assignWorkRecord ->
+            ( endDay model assignWorkRecord
+            , Cmd.none
+            )
+
+        EndTurn ->
+            ( { model | currentPhase = Draw }
+            , Cmd.none
+            )
+
+
+endDay : Model -> AssignWorkRecord -> Model
+endDay model assignWorkRecord =
+    { model | currentPhase = ChainProduction assignWorkRecord }
 
 
 shuffleHalfOfHandIntoDeck model =
