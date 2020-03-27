@@ -107,6 +107,9 @@ update msg model =
             , Cmd.none
             )
 
+        SetWorker w ->
+            ( { model | worker = w }, Cmd.none )
+
 
 endDay : Model -> AssignWorkRecord -> Model
 endDay model assignWorkRecord =

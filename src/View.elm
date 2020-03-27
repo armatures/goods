@@ -3,11 +3,12 @@ module View exposing (..)
 ---- VIEW ----
 
 import Card exposing (Card, CardType(..), Good, Id, MarketOfficeType(..), ProductionCardRecord, ProductionChain(..), RequiredResources(..), Resource(..), TableauCard(..), colorForResource, productionGoodIcon, resourceIcon, showGoodCount, showVictoryPoints, sortResources, valueOfProductionGood)
-import Cards exposing (Model, TurnPhase(..))
+import Cards exposing (Model, TurnPhase(..), mapLazy)
 import Coins exposing (showCoins)
-import Element exposing (Element, alignLeft, alignRight, centerX, centerY, fill, height, padding, px, rgb, rgb255, row, spacing, text, width)
+import Element exposing (Element, alignLeft, alignRight, centerX, centerY, column, el, fill, height, padding, px, rgb, rgb255, rotate, row, spacing, text, width)
 import Element.Background as Background exposing (color)
-import Element.Input as Input
+import Element.Font as Font
+import Element.Input as Input exposing (button)
 import Html exposing (Html)
 import List.Extra exposing (group)
 import Msg exposing (Msg(..))
@@ -72,32 +73,22 @@ view model =
                 ]
 
         showTableauCard index worker c =
-            let
-                showWorker =
-                    if worker.index == index then
-                        if worker.lazy then
-                            text "👷\u{200D}♂️ (lazy)"
-
-                        else
-                            text "👷\u{200D}♂️"
-
-                    else
-                        Element.none
-            in
             case c of
                 Charburner goodCount pCard ->
-                    Element.column [ color (rgb255 92 137 192), height (px 200), width (px 200) ] <|
-                        [ Element.el [ centerX ] (showGoodCount goodCount)
-                        , Element.el [ centerX ] (Element.text "Charburner")
-                        , productionCardBottom pCard
-                        , showWorker
+                    Element.column [] <|
+                        [ Element.column [ color (rgb255 92 137 192), height (px 200), width (px 200) ]
+                            [ Element.el [ centerX ] (showGoodCount goodCount)
+                            , Element.el [ centerX ] (Element.text "Charburner")
+                            , productionCardBottom pCard
+                            ]
                         ]
+                            ++ [ showWorker worker index ]
 
                 NotCharburner goodCount card ->
                     Element.column [] <|
                         [ showCard { clickHandler = Nothing, showCardTop = tableauCardTop goodCount } card
-                        , showWorker
                         ]
+                            ++ [ showWorker worker index ]
 
         productionCardBottom : ProductionCardRecord -> Element Msg
         productionCardBottom { requiredResources, productionGood, productionChain } =
@@ -247,3 +238,34 @@ type alias ShowCardRecord =
     { clickHandler : Maybe (Card -> Msg)
     , showCardTop : Card -> Element Msg
     }
+
+
+showWorker worker index =
+    let
+        lazyWorker =
+            column
+                [--Background.color (rgb255 100 100 200)
+                ]
+                [ el [ centerX ] <| text "👷\u{200D}♂️ (lazy)"
+                , el [ centerX, rotate (degrees 180) ] <| text "👷\u{200D}♂️"
+                ]
+
+        rotateButton =
+            button []
+                { onPress = Just <| SetWorker (mapLazy not worker)
+                , label = el [ rotate (degrees 270) ] (text "⃕")
+                }
+    in
+    row [ Font.size 50 ]
+        [ rotateButton
+        , el [ centerX, height (px 100), centerX ] <|
+            if worker.index == index then
+                if worker.lazy then
+                    lazyWorker
+
+                else
+                    el [ rotate (degrees 180) ] lazyWorker
+
+            else
+                Element.none
+        ]

@@ -1,7 +1,7 @@
 module Msg exposing (..)
 
 import Card exposing (Card, Id)
-import Cards exposing (AssignWorkRecord)
+import Cards exposing (AssignWorkRecord, WorkerRecord)
 
 
 type Msg
@@ -11,3 +11,4 @@ type Msg
     | ShuffleDeck (List Card)
     | ChooseCurrentlyBuilding AssignWorkRecord Id
     | DrawCard
+    | SetWorker WorkerRecord

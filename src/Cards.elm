@@ -10,7 +10,7 @@ type alias Model =
     , pendingDraws : Int
     , currentPhase : TurnPhase
     , tableau : List TableauCard
-    , worker : { index : Int, lazy : Bool }
+    , worker : WorkerRecord
     }
 
 
@@ -45,3 +45,12 @@ isInHand card cards =
 isInDeck : Card -> Model -> Bool
 isInDeck card cards =
     List.member card <| .deck cards
+
+
+type alias WorkerRecord =
+    { index : Int, lazy : Bool }
+
+
+mapLazy : (Bool -> Bool) -> WorkerRecord -> WorkerRecord
+mapLazy f w =
+    { w | lazy = f w.lazy }
