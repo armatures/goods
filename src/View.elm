@@ -40,7 +40,7 @@ view model =
                 [ Element.column [ color (rgb 0.4 0.4 0.4), spacing 10, padding 20 ]
                     [ Element.text "Tableau"
                     , Element.row [ padding 20, spacing 10 ]
-                        (List.indexedMap (\i -> showTableauCard (i == model.worker.index)) model.tableau)
+                        (List.indexedMap (\i -> showTableauCard i model.worker) model.tableau)
                     ]
                 , showCurrentlyBuilding currentlyBuilding
                 , Element.column [ height fill, color (rgb 0.3 0.4 0.4), spacing 10, padding 20 ]
@@ -71,11 +71,15 @@ view model =
                     )
                 ]
 
-        showTableauCard worker c =
+        showTableauCard index worker c =
             let
-                showWorker w =
-                    if w then
-                        text "👷\u{200D}♂️"
+                showWorker =
+                    if worker.index == index then
+                        if worker.lazy then
+                            text "👷\u{200D}♂️ (lazy)"
+
+                        else
+                            text "👷\u{200D}♂️"
 
                     else
                         Element.none
@@ -86,14 +90,14 @@ view model =
                         [ Element.el [ centerX ] (showGoodCount goodCount)
                         , Element.el [ centerX ] (Element.text "Charburner")
                         , productionCardBottom pCard
+                        , showWorker
                         ]
-                            ++ [ showWorker worker ]
 
                 NotCharburner goodCount card ->
                     Element.column [] <|
                         [ showCard { clickHandler = Nothing, showCardTop = tableauCardTop goodCount } card
+                        , showWorker
                         ]
-                            ++ [ showWorker worker ]
 
         productionCardBottom : ProductionCardRecord -> Element Msg
         productionCardBottom { requiredResources, productionGood, productionChain } =
