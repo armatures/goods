@@ -30,6 +30,7 @@ init { charBurnerIndex } =
             , pendingDraws = 5
             , currentPhase = Draw
             , tableau = [ charburnerForIndex charBurnerIndex ]
+            , worker = { index = 0 }
             }
     in
     ( model, shuffleDeck allCards )

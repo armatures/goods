@@ -10,6 +10,7 @@ type alias Model =
     , pendingDraws : Int
     , currentPhase : TurnPhase
     , tableau : List TableauCard
+    , worker : { index : Int }
     }
 
 

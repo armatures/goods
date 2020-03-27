@@ -40,7 +40,7 @@ view model =
                 [ Element.column [ color (rgb 0.4 0.4 0.4), spacing 10, padding 20 ]
                     [ Element.text "Tableau"
                     , Element.row [ padding 20, spacing 10 ]
-                        (List.map showTableauCard model.tableau)
+                        (List.indexedMap (\i -> showTableauCard (i == model.worker.index)) model.tableau)
                     ]
                 , showCurrentlyBuilding currentlyBuilding
                 , Element.column [ height fill, color (rgb 0.3 0.4 0.4), spacing 10, padding 20 ]
@@ -71,17 +71,29 @@ view model =
                     )
                 ]
 
-        showTableauCard c =
+        showTableauCard worker c =
+            let
+                showWorker w =
+                    if w then
+                        text "👷\u{200D}♂️"
+
+                    else
+                        Element.none
+            in
             case c of
                 Charburner goodCount pCard ->
-                    Element.column [ color (rgb255 92 137 192), height (px 200), width (px 200) ]
+                    Element.column [ color (rgb255 92 137 192), height (px 200), width (px 200) ] <|
                         [ Element.el [ centerX ] (showGoodCount goodCount)
                         , Element.el [ centerX ] (Element.text "Charburner")
                         , productionCardBottom pCard
                         ]
+                            ++ [ showWorker worker ]
 
                 NotCharburner goodCount card ->
-                    showCard { clickHandler = Nothing, showCardTop = tableauCardTop goodCount } card
+                    Element.column [] <|
+                        [ showCard { clickHandler = Nothing, showCardTop = tableauCardTop goodCount } card
+                        ]
+                            ++ [ showWorker worker ]
 
         productionCardBottom : ProductionCardRecord -> Element Msg
         productionCardBottom { requiredResources, productionGood, productionChain } =
