@@ -18,6 +18,47 @@ import String exposing (fromInt)
 view : Model -> Html Msg
 view model =
     let
+        turnPhaseContent : List (Element Msg)
+        turnPhaseContent =
+            case model.currentPhase of
+                Draw ->
+                    [ tableau Nothing []
+                    , hand Nothing model.hand
+                    , row [ spacing 10 ]
+                        [ Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                            { onPress = Just (StartDay True)
+                            , label = Element.text "redraw hand and start the day"
+                            }
+                        , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                            { onPress = Just (StartDay False)
+                            , label = Element.text "keep these cards and start the day"
+                            }
+                        ]
+                    , Element.text <| "discards: " ++ fromInt (List.length model.discard)
+                    , Element.text <| "draw deck: " ++ fromInt (List.length model.deck)
+                    ]
+
+                AssignWork assignWorkRecord ->
+                    [ tableau assignWorkRecord.currentlyBuilding assignWorkRecord.resources
+                    , hand (Just (\c -> ChooseCurrentlyBuilding assignWorkRecord c.id))
+                        (List.filter (\c -> assignWorkRecord.currentlyBuilding /= Just c.id) model.hand)
+                    , Element.text "assign work now"
+                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                        { onPress = Just (EndDay assignWorkRecord)
+                        , label = Element.text "Done Assigning Work and Choosing a Building"
+                        }
+                    ]
+
+                ChainProduction { currentlyBuilding, resources } ->
+                    [ tableau currentlyBuilding resources
+                    , hand Nothing model.hand
+                    , Element.text "chain production now"
+                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
+                        { onPress = Just EndTurn
+                        , label = Element.text "Done Chaining"
+                        }
+                    ]
+
         maybeBuildingCard maybeBuildingCardId =
             maybeBuildingCardId
                 |> Maybe.andThen (\cardId -> List.Extra.find (.id >> (==) cardId) model.hand)
@@ -61,12 +102,12 @@ view model =
                         Element.el [ colorForResource r, width (px 20), height (px 20) ] (Element.text <| fromInt count)
                     )
 
-        hand : Maybe (Card -> Msg) -> Element Msg
-        hand clickHandler =
+        hand : Maybe (Card -> Msg) -> List Card -> Element Msg
+        hand clickHandler handCards =
             Element.column [ padding 20, spacing 10, color (rgb 0.0 0.4 0.4), width fill ]
                 [ Element.text "Hand"
                 , Element.row [ padding 20, spacing 10 ]
-                    (model.hand
+                    (handCards
                         |> List.map
                             (showCard { clickHandler = clickHandler, showCardTop = handCardTop })
                     )
@@ -186,46 +227,6 @@ view model =
 
                 ProductionCard productionCardRecord ->
                     productionCardBottom productionCardRecord
-
-        turnPhaseContent : List (Element Msg)
-        turnPhaseContent =
-            case model.currentPhase of
-                Draw ->
-                    [ tableau Nothing []
-                    , hand Nothing
-                    , row [ spacing 10 ]
-                        [ Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                            { onPress = Just (StartDay True)
-                            , label = Element.text "redraw hand and start the day"
-                            }
-                        , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                            { onPress = Just (StartDay False)
-                            , label = Element.text "keep these cards and start the day"
-                            }
-                        ]
-                    , Element.text <| "discards: " ++ fromInt (List.length model.discard)
-                    , Element.text <| "draw deck: " ++ fromInt (List.length model.deck)
-                    ]
-
-                AssignWork assignWorkRecord ->
-                    [ tableau assignWorkRecord.currentlyBuilding assignWorkRecord.resources
-                    , hand (Just (\c -> ChooseCurrentlyBuilding assignWorkRecord c.id))
-                    , Element.text "assign work now"
-                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just (EndDay assignWorkRecord)
-                        , label = Element.text "Done Assigning Work and Choosing a Building"
-                        }
-                    ]
-
-                ChainProduction { currentlyBuilding, resources } ->
-                    [ tableau currentlyBuilding resources
-                    , hand Nothing
-                    , Element.text "chain production now"
-                    , Input.button [ color (rgb 0.1 0.8 0.8), padding 10 ]
-                        { onPress = Just EndTurn
-                        , label = Element.text "Done Chaining"
-                        }
-                    ]
     in
     Element.layout [ Background.color (rgb 0.3 0.2 0.1) ]
         (Element.column
