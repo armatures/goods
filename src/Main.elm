@@ -98,9 +98,7 @@ update msg model =
             )
 
         EndDay assignWorkRecord ->
-            ( endDay model assignWorkRecord
-            , Cmd.none
-            )
+            drawCardIfNeeded (endDay model assignWorkRecord)
 
         EndTurn ->
             ( { model | currentPhase = Draw }
@@ -161,8 +159,8 @@ drawCardIfNeeded model =
             draw
 
         AssignWork assignWorkRecord ->
-            if isPendingDrawToResources assignWorkRecord then
-                case drawMorningResources model of
+            if isPendingDrawToResources Morning assignWorkRecord then
+                case drawDailyResources Morning model of
                     Ok m ->
                         drawCardIfNeeded m
 
@@ -173,18 +171,36 @@ drawCardIfNeeded model =
                 draw
 
         ChainProduction chainProductionRecord ->
-            Debug.todo "chaining draw"
+            if isPendingDrawToResources Evening chainProductionRecord then
+                case drawDailyResources Evening model of
+                    Ok m ->
+                        drawCardIfNeeded m
+
+                    Err EmptyDeck ->
+                        ( { model | discard = [] }, shuffleDeck model.discard )
+
+            else
+                draw
 
 
 type DrawErr
     = EmptyDeck
 
 
-isPendingDrawToResources : ChainProductionRecord -> Bool
-isPendingDrawToResources { resources } =
+isPendingDrawToResources : TimeOfDay -> { r | resources : List Card } -> Bool
+isPendingDrawToResources timeOfDay { resources } =
     List.filter .sun resources
         |> List.length
-        |> (>) 2
+        |> (>) (resourcesNeededForTimeOfDay timeOfDay)
+
+
+resourcesNeededForTimeOfDay timeOfDay =
+    case timeOfDay of
+        Morning ->
+            2
+
+        Evening ->
+            4
 
 
 drawCard : Model -> Result DrawErr Model
@@ -213,14 +229,19 @@ assignWork morningResources =
         }
 
 
-drawMorningResources : Model -> Result DrawErr Model
-drawMorningResources model =
+type TimeOfDay
+    = Morning
+    | Evening
+
+
+drawDailyResources : TimeOfDay -> Model -> Result DrawErr Model
+drawDailyResources timeOfDay model =
     let
-        take2Suns : List Card -> ( Deck, List Card )
-        take2Suns =
+        takeSuns : Int -> List Card -> ( Deck, List Card )
+        takeSuns sunCount =
             List.foldl
                 (\card ( deck, drawn ) ->
-                    if List.filter .sun drawn |> List.length |> (==) 2 then
+                    if List.filter .sun drawn |> List.length |> (==) sunCount then
                         ( card :: deck, drawn )
 
                     else
@@ -228,18 +249,38 @@ drawMorningResources model =
                 )
                 ( [], [] )
 
-        ( newDeck, morningResources ) =
-            take2Suns model.deck
+        ( newDeck, newResources ) =
+            takeSuns totalSunCount model.deck
+
+        totalSunCount =
+            case timeOfDay of
+                Morning ->
+                    2
+
+                Evening ->
+                    4
     in
-    if List.filter .sun morningResources |> List.length |> (==) 2 then
+    if List.filter .sun newResources |> List.length |> (==) totalSunCount then
         Ok
             { model
                 | deck = newDeck
-                , currentPhase = assignWork morningResources
+                , currentPhase = setDailyResources model.currentPhase newResources
             }
 
     else
         Err EmptyDeck
+
+
+setDailyResources currentPhase newResources =
+    case currentPhase of
+        AssignWork a ->
+            AssignWork { a | resources = newResources }
+
+        Draw ->
+            Draw
+
+        ChainProduction a ->
+            ChainProduction { a | resources = newResources }
 
 
 setDeck : List Card -> Model -> Model
